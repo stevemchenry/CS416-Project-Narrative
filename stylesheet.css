@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body {
+    background-color: #f8f8f8;
+}
+
+h1
+,h2 {
+    font-family: 'Playfair Display', serif;
+}
+
+h1 {
+    text-align: center;
+}
+
+#narrative-container {
+    display: flex;
+    flex-direction: row;
+    height: 800px;
+    width: 1280px;
+}
+
+#narrative-container > div:first-of-type {
+    border: solid 1px #ccc;
+}
+
+#narrative-container > div:not(:first-of-type) {
+    border-top: solid 1px #ccc;
+    border-right: solid 1px #ccc;
+    border-bottom: solid 1px #ccc;
+}
+
+#page-content {
+    display: flex;
+    justify-content: center;
+}
+
+#story {
+    background-color: #e0e0e0;
+    flex: 0 0 280px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#story > h2 {
+    width: fit-content;
+}
+
+#story > p {
+    font-family: 'Roboto', sans-serif;
+}
+
+#visualization {
+    background-color: #fdfdfd;
+    flex: auto;
+}
+
+.chart-axis-label {
+    font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+}
+
+.chart-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: bold;
+}

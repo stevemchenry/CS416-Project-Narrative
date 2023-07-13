@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Surviving Fear and Greed: A Long-term Perspective of the U.S. Stock Market</title>
+        <link rel="stylesheet" href="stylesheet.css" />
+        <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+        <script type="text/javascript">
+            // Global variables
+            let canvas = null;
+            const canvasWidth = 1000;
+            const canvasHeight = 800;
+            const sceneTransitionTime = 500;
+
+            function init() {
+                // Select the canvas and store it in its global variable
+                canvas = d3.select(document.getElementById("canvas"));
+
+                // Set the canvas's dimensions
+                canvas.attr("width", canvasWidth)
+                    .attr("height", canvasHeight);
+
+                // Start the narrative visualization by loading the first scene
+                loadScene1();
+            }
+
+            function loadScene1() {
+                // Initialize the small sample data set
+                const jokeDataDays = ["Two Days Ago", "Yesterday", "Today", "Tomorrow", "Two Days From Now"]
+                const jokeDataValues = [0.0, 30.0, 37.0, 60.0, 100.0];
+
+                // Declare the chart and its attributes
+                const chart = {
+                    chart : null,
+                    width : canvasWidth,
+                    height : canvasHeight,
+                    x : 0,
+                    y : 0,
+                    marginBottom : 50,
+                    marginLeft : 80,
+                    marginRight : 20,
+                    marginTop : 50
+                };
+
+                // Create the chart (initially invisible)
+                chart.chart = canvas.append("g")
+                    .attr("height", chart.height)
+                    .attr("width", chart.width)
+                    .attr("transform", `translate(${chart.x},${chart.y})`)
+                    .attr("opacity", "0.0");
+
+                // Create the chart title
+                chart.chart.append("text")
+                    .text("Unrealistic Expectations of Returns")
+                    .attr("class", "chart-title")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", `translate(${calculateTitleCenter(chart)},30)`)
+
+                // Create the x scale
+                const x = d3.scaleBand()
+                    .domain(jokeDataDays)
+                    .range([chart.marginLeft, (chart.width - chart.marginRight)]);
+
+                // Create the y scale
+                const y = d3.scaleLinear()
+                    .domain([0, 100])
+                    .range([(chart.height - chart.marginBottom), chart.marginTop]);
+
+                // Create the x axis
+                chart.chart.append("g")
+                    .attr("transform", `translate(0,${chart.height - chart.marginBottom})`)
+                    .call(d3.axisBottom(x))
+                    // Create the axis label
+                    .append("text")
+                    .text("Date")
+                    .attr("class", "chart-axis-label")
+                    .attr("fill", "black")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", `translate(${calculateAxisXCenter(chart)},35)`);
+
+                // Create the y axis
+                chart.chart.append("g")
+                    .attr("transform", `translate(${chart.marginLeft},0)`)
+                    .call(d3.axisLeft(y).tickFormat(d3.format(",.0%")))
+                    // Create the axis label
+                    .append("text")
+                    .text("Change in Value")
+                    .attr("class", "chart-axis-label")
+                    .attr("fill", "black")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", `translate(-60,${calculateAxisYCenter(chart)}) rotate(-90)`);
+
+                // Create the line
+                const jokeDataPath = chart.chart.append("path")
+                    .datum(jokeDataValues)
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", "1.5px")
+                    .attr("d", d3.line()
+                        .x(function(d, i) { return x(jokeDataDays[i]) + (x.bandwidth() / 2); })
+                        .y(function(d) { return y(d); })
+                    );
+
+                // Perform the chart's entrance transition
+                chart.chart.transition()
+                    .duration(sceneTransitionTime)
+                    .ease(d3.easeLinear)
+                    .attr("opacity", "1.0");
+                
+                // Perform the line's entrance transition
+                const jokeDataPathLength = jokeDataPath.node().getTotalLength();
+
+                jokeDataPath.attr("stroke-dashoffset", jokeDataPathLength)
+                    .attr("stroke-dasharray", jokeDataPathLength)
+                    .transition()
+                    .delay(sceneTransitionTime)
+                    .duration(2500)
+                    .ease(d3.easeCubic)
+                    .attr("stroke-dashoffset", 0);
+            }
+
+            function calculateAxisXCenter(chart) {
+                return (((chart.width - chart.marginLeft - chart.marginRight) / 2) + chart.marginLeft);
+            }
+
+            function calculateAxisYCenter(chart) {
+                return (((chart.height - chart.marginTop - chart.marginBottom) / 2) + chart.marginTop);
+            }
+
+            function calculateTitleCenter(chart) {
+                return (chart.width / 2);
+            }
+        </script>
+    </head>
+    <body onload="init()">
+        <h1>Surviving Fear and Greed: A Long-term Perspective of the U.S. Stock Market</h1>
+        <div id="page-content">
+            <div id="narrative-container">
+                <div id="story">
+                    <h2>Fear and Greed</h2>
+                    <p>Lorem ipsum dolor sit amet.</p>
+                </div>
+                <div id="visualization">
+                    <svg id="canvas"></svg>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
