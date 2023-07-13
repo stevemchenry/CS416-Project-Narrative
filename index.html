@@ -23,9 +23,10 @@
                 loadScene1();
             }
 
+            // Load scene 1 onto the canvas
             function loadScene1() {
                 // Initialize the small sample data set
-                const jokeDataDays = ["Two Days Ago", "Yesterday", "Today", "Tomorrow", "Two Days From Now"]
+                const jokeDataDates = ["Two Days Ago", "Yesterday", "Today", "Tomorrow", "Two Days From Now"];
                 const jokeDataValues = [0.0, 30.0, 37.0, 60.0, 100.0];
 
                 // Declare the chart and its attributes
@@ -53,11 +54,11 @@
                     .text("Unrealistic Expectations of Returns")
                     .attr("class", "chart-title")
                     .attr("text-anchor", "middle")
-                    .attr("transform", `translate(${calculateTitleCenter(chart)},30)`)
+                    .attr("transform", `translate(${chartTitleCenter(chart)},30)`);
 
                 // Create the x scale
                 const x = d3.scaleBand()
-                    .domain(jokeDataDays)
+                    .domain(jokeDataDates)
                     .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
                 // Create the y scale
@@ -75,7 +76,7 @@
                     .attr("class", "chart-axis-label")
                     .attr("fill", "black")
                     .attr("text-anchor", "middle")
-                    .attr("transform", `translate(${calculateAxisXCenter(chart)},35)`);
+                    .attr("transform", `translate(${chartAxisXCenter(chart)},35)`);
 
                 // Create the y axis
                 chart.chart.append("g")
@@ -87,7 +88,7 @@
                     .attr("class", "chart-axis-label")
                     .attr("fill", "black")
                     .attr("text-anchor", "middle")
-                    .attr("transform", `translate(-60,${calculateAxisYCenter(chart)}) rotate(-90)`);
+                    .attr("transform", `translate(-60,${chartAxisYCenter(chart)}) rotate(-90)`);
 
                 // Create the line
                 const jokeDataPath = chart.chart.append("path")
@@ -96,7 +97,7 @@
                     .attr("stroke", "steelblue")
                     .attr("stroke-width", "1.5px")
                     .attr("d", d3.line()
-                        .x(function(d, i) { return x(jokeDataDays[i]) + (x.bandwidth() / 2); })
+                        .x(function(d, i) { return x(jokeDataDates[i]) + (x.bandwidth() / 2); })
                         .y(function(d) { return y(d); })
                     );
 
@@ -118,15 +119,18 @@
                     .attr("stroke-dashoffset", 0);
             }
 
-            function calculateAxisXCenter(chart) {
+            // Calculate the center point of a chart's x axis
+            function chartAxisXCenter(chart) {
                 return (((chart.width - chart.marginLeft - chart.marginRight) / 2) + chart.marginLeft);
             }
 
-            function calculateAxisYCenter(chart) {
+            // Calculate the center point of a chart's y axis
+            function chartAxisYCenter(chart) {
                 return (((chart.height - chart.marginTop - chart.marginBottom) / 2) + chart.marginTop);
             }
 
-            function calculateTitleCenter(chart) {
+            // Calculate the center point of a chart's title
+            function chartTitleCenter(chart) {
                 return (chart.width / 2);
             }
         </script>
