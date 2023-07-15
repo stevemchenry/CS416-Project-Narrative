@@ -64,6 +64,11 @@ h1 {
 
 .chart-title {
     font-family: 'Playfair Display', serif;
-    font-size: 20px;
+    font-size: 25px;
     font-weight: bold;
+}
+
+.chart-focus-text {
+    font-family: 'Roboto', sans-serif;
+    font-size: 35px;
 }

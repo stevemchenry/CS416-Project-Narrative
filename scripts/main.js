@@ -35,30 +35,38 @@ function loadScene1() {
 }
 
 function renderScene1Canvas(dataset) {
-    const data = dataset.map(a => a.RetailNetFlowMillions);
+    const data = dataset.map(a => parseInt(a.RetailNetFlowMillions));
 
     // Declare the chart and its attributes
     const chart = {
         chart : null,
-        width: canvasWidth,
         height: canvasHeight,
+        width: canvasWidth,
         x : (canvasWidth / 2),
         y : (canvasHeight / 2),
         innerRadius: 150,
-        outerRadius: 275
-    };
-
-    // Create the pie and arc generators
-    const pie = d3.pie();
-    const arc = d3.arc()
-        .innerRadius(chart.innerRadius)
-        .outerRadius(chart.outerRadius);
+        outerRadius: 275,
+        markSize : 50
+    };    
 
     // Create the chart element and set its dimensions and position
     chart.chart = canvas.append("g")
         .attr("height", chart.height)
         .attr("width", chart.width)
         .attr("transform", `translate(${chart.x},${chart.y})`);
+
+    // Create the chart title
+    chart.chart.append("text")
+        .text("Retail Investors' Top 10 Picks for Early 2023")
+        .attr("class", "chart-title")
+        .attr("text-anchor", "middle")
+        .attr("transform", `translate(${chartTitleCenter(chart) - chart.x},${40 - chart.y})`);
+
+    // Create the pie and arc generators
+    const pie = d3.pie();
+    const arc = d3.arc()
+        .innerRadius(chart.innerRadius)
+        .outerRadius(chart.outerRadius);
 
     // Create the pie chart and its entrance transition
     chart.chart.selectAll("path")
@@ -91,13 +99,30 @@ function renderScene1Canvas(dataset) {
         .append("image")
         .attr("opacity", 0.0)
         .attr("href", (d, i) => `./images/${dataset[i].LogoFile}`)
-        .attr("width", 50)
-        .attr("height", 50)
-        .attr("transform", d => `translate(${arc.centroid(d)[0] - 25},${arc.centroid(d)[1] - 25})`)
+        .attr("width", chart.markSize)
+        .attr("height", chart.markSize)
+        .attr("transform", d => `translate(${arc.centroid(d)[0] - (chart.markSize / 2)},${arc.centroid(d)[1] - (chart.markSize / 2)})`)
         .transition()
         .delay(chartTransitionTime * 0.85)
         .duration(500)
         .attr("opacity", 1.0);
+
+    // Create the sum counter
+    chart.chart.datum(data.reduce((accumulator, currentValue) => (accumulator + currentValue), 0))
+        .append("text")
+        .attr("fill", "black")
+        .attr("text-anchor", "middle")
+        .attr("class", "chart-focus-text")
+        .transition()
+        .duration(chartTransitionTime)
+        .tween("text-focus", function(d) {
+            const textInterpolation = d3.interpolate(0, d);
+            const formatterNumberThousands = d3.format(",");
+    
+            return t => {
+                this.textContent = `$${formatterNumberThousands(Math.round(textInterpolation(t)))}M`;
+            };
+        });
 }
 
 // Load scene 0 onto the canvas
