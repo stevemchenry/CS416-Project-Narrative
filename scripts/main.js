@@ -44,8 +44,8 @@ function renderScene1Canvas(dataset) {
         height: canvasHeight,
         x : (canvasWidth / 2),
         y : (canvasHeight / 2),
-        innerRadius: 125,
-        outerRadius: 200
+        innerRadius: 150,
+        outerRadius: 275
     };
 
     // Create the pie and arc generators
@@ -54,12 +54,13 @@ function renderScene1Canvas(dataset) {
         .innerRadius(chart.innerRadius)
         .outerRadius(chart.outerRadius);
 
-    // Create the chart and set its dimensions and position
+    // Create the chart element and set its dimensions and position
     chart.chart = canvas.append("g")
         .attr("height", chart.height)
         .attr("width", chart.width)
         .attr("transform", `translate(${chart.x},${chart.y})`);
 
+    // Create the pie chart and its entrance transition
     chart.chart.selectAll("path")
         .data(pie(data))
         .enter()
@@ -67,7 +68,7 @@ function renderScene1Canvas(dataset) {
         .attr("fill", (d, i) => color(i))
         .transition()
         .duration(chartTransitionTime)
-        .attrTween("d", (d, i) => {
+        .attrTween("d", d => {
             const originalEnd = d.endAngle;
             const angleInterpolation = d3.interpolate(pie.startAngle()(), pie.endAngle()());
 
@@ -83,13 +84,20 @@ function renderScene1Canvas(dataset) {
             };
         });
 
-    chart.chart.selectAll("text")
+    // Create the pie chart wedge icons and their entrance transition
+    chart.chart.selectAll("image")
         .data(pie(data))
         .enter()
-        .append("text")
-        .text((d, i) => dataset[i].Ticker)
-        .style("text-anchor", "middle")
-        .attr("transform", d => { console.log(arc.centroid(d)); return "translate(" + arc.centroid(d) + ")";})
+        .append("image")
+        .attr("opacity", 0.0)
+        .attr("href", (d, i) => `./images/${dataset[i].LogoFile}`)
+        .attr("width", 50)
+        .attr("height", 50)
+        .attr("transform", d => `translate(${arc.centroid(d)[0] - 25},${arc.centroid(d)[1] - 25})`)
+        .transition()
+        .delay(chartTransitionTime * 0.85)
+        .duration(500)
+        .attr("opacity", 1.0);
 }
 
 // Load scene 0 onto the canvas

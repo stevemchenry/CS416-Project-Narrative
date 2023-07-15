@@ -1,11 +1,11 @@
-CompanyName,Ticker,RetailNetFlowMillions
-Tesla,TSLA,9751
-SPDR S&P 500 ETF,SPY,3572
-Amazon,AMZN,1786
-Apple,AAPL,1674
-NVIDIA,NVDA,1367
-Invesco QQQ ETF,QQQ,1353
-Alphabet,GOOG/L,1218
-AMD,AMD,941
-Meta,META,780
-Microsoft,MSFT,768
+CompanyName,Ticker,RetailNetFlowMillions,LogoFile
+Tesla,TSLA,9751,logo-tesla.svg
+SPDR S&P 500 ETF,SPY,3572,logo-ssga.svg
+Amazon,AMZN,1786,logo-amazon.svg
+Apple,AAPL,1674,logo-apple.svg
+NVIDIA,NVDA,1367,logo-nvidia.svg
+Invesco QQQ ETF,QQQ,1353,logo-invesco.svg
+Alphabet,GOOG/L,1218,logo-google.svg
+AMD,AMD,941,logo-amd.svg
+Meta,META,780,logo-meta.svg
+Microsoft,MSFT,768,logo-microsoft.svg
