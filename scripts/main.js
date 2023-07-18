@@ -1,9 +1,11 @@
 "use strict"
 
 import "https://d3js.org/d3.v7.min.js";
+import * as storyContent from "./storyContent.js";
 
 // Declare global variables and set static values
 let canvas = null;
+let story = null;
 const canvasWidth = 1000;
 const canvasHeight = 800;
 const sceneTransitionTime = 500;
@@ -14,8 +16,9 @@ init();
 
 // Initialize the narrative visualization
 function init() {
-    // Select the canvas and store it in its global variable
+    // Store the canvas selection and story container into variables
     canvas = d3.select("#canvas");
+    story = document.getElementById("story");
 
     // Set the canvas's dimensions
     canvas.attr("width", canvasWidth)
@@ -28,6 +31,11 @@ function init() {
 // Load scene 1
 function loadScene1() {
     // Load the story text
+    story.appendChild(document.createElement("h2")).innerHTML = storyContent.scenes[1].title;
+
+    for(const paragraph of storyContent.scenes[1].body) {
+        story.appendChild(document.createElement("p")).innerHTML = paragraph;
+    }
 
     // Load the visualization
     d3.csv("./data/popular-retail-equities-early-2023.csv")
