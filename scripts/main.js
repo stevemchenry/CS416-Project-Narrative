@@ -5,7 +5,9 @@ import * as storyContent from "./storyContent.js";
 
 // Declare global variables and set static values
 let canvas = null;
-let story = null;
+let storyContainer = null;
+let navigation = null;
+let sceneState = null;
 const canvasWidth = 1000;
 const canvasHeight = 800;
 const sceneTransitionTime = 500;
@@ -16,25 +18,78 @@ init();
 
 // Initialize the narrative visualization
 function init() {
-    // Store the canvas selection and story container into variables
+    // Store the canvas selection, story container, and navigation controls into variables
     canvas = d3.select("#canvas");
-    story = document.getElementById("story");
+    storyContainer = document.getElementById("story");
+    navigation = document.getElementsByTagName("nav")[0]
+        .getElementsByTagName("ul")[0];
+
+    // Create the scene states
+    // Any function may observe the sceneState variable, but only loadScene() may modify it
+    sceneState = {
+        current : 0,
+        viewed : storyContent.scenes.map(a => false),
+        loader : [null, loadScene1]
+    };
 
     // Set the canvas's dimensions
     canvas.attr("width", canvasWidth)
         .attr("height", canvasHeight);
 
+    // Update the navigation bar
+    updateNavigationBar();
+
     // Start the narrative visualization by loading the first scene
-    loadScene1();
+    loadScene(1);
+}
+
+// Load the specified scene
+function loadScene(sceneNumber) {
+
+    // Clear the canvas
+    if(sceneNumber != 0) {
+
+    }
+
+    // Set the new scene as having been viewed
+    sceneState.viewed[sceneNumber] = true;
+    sceneState.current = sceneNumber;
+
+    // Load the scene
+    sceneState.loader[sceneNumber]();
+}
+
+// Update the navigation bar
+function updateNavigationBar() {
+
+    // Create an array to store the newly created nodes
+    const nodes = [];
+
+    let currentNode = document.createElement("li");
+    currentNode.textContent = "◀";
+    nodes.push(currentNode);
+
+    /*
+    for(let i = 1; i < storyContent.scenes.length; ++i) {
+        navigation.insertBefore(document.createElement("li"), navigation.firstChild);
+        console.log(`Added nav tab ${i}`);
+    }
+    */
+
+    currentNode = document.createElement("li");
+    currentNode.textContent = "▶";
+    nodes.push(currentNode);
+
+    navigation.replaceChildren(...nodes);
 }
 
 // Load scene 1
 function loadScene1() {
     // Load the story text
-    story.appendChild(document.createElement("h2")).innerHTML = storyContent.scenes[1].title;
+    storyContainer.appendChild(document.createElement("h2")).innerHTML = storyContent.scenes[1].title;
 
     for(const paragraph of storyContent.scenes[1].body) {
-        story.appendChild(document.createElement("p")).innerHTML = paragraph;
+        storyContainer.appendChild(document.createElement("p")).innerHTML = paragraph;
     }
 
     // Load the visualization
