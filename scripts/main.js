@@ -7,7 +7,7 @@ import * as storyContent from "./storyContent.js";
 let canvas = null;
 let storyContainer = null;
 let navigation = null;
-let sceneState = null;
+let scene = null;
 const canvasWidth = 1000;
 const canvasHeight = 800;
 const sceneTransitionTime = 500;
@@ -26,18 +26,15 @@ function init() {
 
     // Create the scene states
     // Any function may observe the sceneState variable, but only loadScene() may modify it
-    sceneState = {
+    scene = {
         current : 0,
         viewed : storyContent.scenes.map(a => false),
-        loader : [null, loadScene1]
+        loader : [null, loadScene1, ()=>{}]
     };
 
     // Set the canvas's dimensions
     canvas.attr("width", canvasWidth)
         .attr("height", canvasHeight);
-
-    // Update the navigation bar
-    updateNavigationBar();
 
     // Start the narrative visualization by loading the first scene
     loadScene(1);
@@ -45,53 +42,96 @@ function init() {
 
 // Load the specified scene
 function loadScene(sceneNumber) {
-
     // Clear the canvas
-    if(sceneNumber != 0) {
-
-    }
+    document.getElementById("canvas").replaceChildren();
 
     // Set the new scene as having been viewed
-    sceneState.viewed[sceneNumber] = true;
-    sceneState.current = sceneNumber;
+    scene.viewed[sceneNumber] = true;
+    scene.current = sceneNumber;
+
+    // Update the navigation bar
+    updateNavigationBar();
+
+    // Load the story text
+    const nodes = []
+
+    let currentNode = document.createElement("h2");
+    currentNode.innerHTML = storyContent.scenes[scene.current].title;
+    nodes.push(currentNode);
+
+    for(const paragraph of storyContent.scenes[scene.current].body) {
+        currentNode = document.createElement("p")
+        currentNode.innerHTML = paragraph;
+        nodes.push(currentNode);
+    }
+
+    storyContainer.replaceChildren(...nodes);
 
     // Load the scene
-    sceneState.loader[sceneNumber]();
+    scene.loader[sceneNumber]();
 }
 
 // Update the navigation bar
 function updateNavigationBar() {
-
     // Create an array to store the newly created nodes
     const nodes = [];
 
+    // Add the "back" button
     let currentNode = document.createElement("li");
     currentNode.textContent = "◀";
+    
+    if(scene.current > 1) {
+        currentNode.classList.add("enabled");
+        currentNode.title = "Go back";
+        currentNode.addEventListener("click", e => loadScene((scene.current - 1)));
+
+    } else {
+        currentNode.classList.add("disabled");
+    }
+    
     nodes.push(currentNode);
 
-    /*
+    // Add the scene selection buttons
     for(let i = 1; i < storyContent.scenes.length; ++i) {
-        navigation.insertBefore(document.createElement("li"), navigation.firstChild);
-        console.log(`Added nav tab ${i}`);
-    }
-    */
+        let currentNode = document.createElement("li");
+        currentNode.textContent = i;
+        
+        if(i == scene.current) {
+            currentNode.classList.add("current");
+            currentNode.addEventListener("click", e => loadScene(i));
 
+        } else if(scene.viewed[i]) {
+            currentNode.classList.add("enabled");
+            currentNode.addEventListener("click", e => loadScene(i));
+
+        } else {
+            currentNode.classList.add("disabled");
+        }
+
+        nodes.push(currentNode);
+    }
+
+    // Add the "forward" button
     currentNode = document.createElement("li");
     currentNode.textContent = "▶";
+
+    if(scene.current < scene.viewed.length - 1) {
+        currentNode.classList.add("enabled");
+        currentNode.title = "Go forward";
+        currentNode.addEventListener("click", e => loadScene((scene.current + 1)));
+
+    } else {
+        currentNode.classList.add("disabled");
+    }
+
     nodes.push(currentNode);
 
+    // Replace the old nav bar with the new nav bar
     navigation.replaceChildren(...nodes);
 }
 
 // Load scene 1
 function loadScene1() {
-    // Load the story text
-    storyContainer.appendChild(document.createElement("h2")).innerHTML = storyContent.scenes[1].title;
-
-    for(const paragraph of storyContent.scenes[1].body) {
-        storyContainer.appendChild(document.createElement("p")).innerHTML = paragraph;
-    }
-
     // Load the visualization
     d3.csv("./data/popular-retail-equities-early-2023.csv")
         .then(renderScene1Canvas);
