@@ -29,7 +29,7 @@ function init() {
     scene = {
         current : 0,
         viewed : storyContent.scenes.map(a => false),
-        loader : [null, loadScene1, ()=>{}]
+        loader : [null, loadScene1, loadScene2, ()=>{}]
     };
 
     // Set the canvas's dimensions
@@ -137,6 +137,7 @@ function loadScene1() {
         .then(renderScene1Canvas);
 }
 
+// Render scene 1's visualization onto the canvas
 function renderScene1Canvas(dataset) {
     const data = dataset.map(a => parseInt(a.RetailNetFlowMillions));
 
@@ -163,7 +164,7 @@ function renderScene1Canvas(dataset) {
         .text("Retail Investors' Top 10 Picks for Early 2023")
         .attr("class", "chart-title")
         .attr("text-anchor", "middle")
-        .attr("transform", `translate(${chartTitleCenter(chart) - chart.x},${40 - chart.y})`);
+        .attr("transform", `translate(${chartTitleCenter(chart) - chart.x},${50 - chart.y})`);
 
     // Create the pie and arc generators
     const pie = d3.pie();
@@ -226,6 +227,88 @@ function renderScene1Canvas(dataset) {
                 this.textContent = `$${formatterNumberThousands(Math.round(textInterpolation(t)))}M`;
             };
         });
+}
+
+// Load scene 2
+function loadScene2() {
+    // Load the visualization
+    d3.csv("./data/spx-historical.csv")
+        .then(renderScene2Canvas);
+}
+
+// Render scene 2's visualization onto the canvas
+function renderScene2Canvas(dataset) {
+    // Declare the chart and its attributes
+    const chart = {
+        chart : null,
+        width : canvasWidth,
+        height : canvasHeight,
+        x : 0,
+        y : 0,
+        marginBottom : 50,
+        marginLeft : 80,
+        marginRight : 20,
+        marginTop : 50
+    };
+
+    // Create the chart (initially invisible)
+    chart.chart = canvas.append("g")
+        .attr("height", chart.height)
+        .attr("width", chart.width)
+        .attr("transform", `translate(${chart.x},${chart.y})`)
+        .attr("opacity", "0.0");
+
+    // Create the chart title
+    chart.chart.append("text")
+        .text("S&P 500 (2000-2002)")
+        .attr("class", "chart-title")
+        .attr("text-anchor", "middle")
+        .attr("transform", `translate(${chartTitleCenter(chart)},${chart.marginTop})`);
+
+    // Create the x scale
+    const x = d3.scaleTime()
+        .domain(d3.extent(dataset, d => d3.timeParse("%Y-%m-%d")(d.Date)))
+        .range([chart.marginLeft, (chart.width - chart.marginRight)]);
+
+    // Create the y scale
+    const y = d3.scaleLinear()
+        .domain(d3.extent(dataset, d => parseFloat(d.Close)))
+        .range([(chart.height - chart.marginBottom), chart.marginTop]);
+
+    // Create the x axis
+    chart.chart.append("g")
+        .attr("transform", `translate(0,${chart.height - chart.marginBottom})`)
+        .call(d3.axisBottom(x))
+        // Create the axis label
+        .append("text")
+        .text("Date")
+        .attr("class", "chart-axis-label")
+        .attr("fill", "black")
+        .attr("text-anchor", "middle")
+        .attr("transform", `translate(${chartAxisXCenter(chart)},35)`);
+
+    // Create the y axis
+    chart.chart.append("g")
+        .attr("transform", `translate(${chart.marginLeft},0)`)
+        .call(d3.axisLeft(y))
+        // Create the axis label
+        .append("text")
+        .text("Change in Value")
+        .attr("class", "chart-axis-label")
+        .attr("fill", "black")
+        .attr("text-anchor", "middle")
+        .attr("transform", `translate(-60,${chartAxisYCenter(chart)}) rotate(-90)`);
+
+
+
+
+
+
+    // Perform the chart's entrance transition
+    chart.chart.transition()
+        .duration(sceneTransitionTime)
+        .ease(d3.easeLinear)
+        .attr("opacity", "1.0");
 }
 
 // Load scene 0 onto the canvas
