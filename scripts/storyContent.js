@@ -17,7 +17,7 @@ export const scenes = [
         body : [
             "The late 1990s saw the previous largest market entry of retail investors during a period now called the \"dot-com bubble\". A wide swath of technology stocks experienced extreme speculative overvaluation spurred by the explosive introduction and growth of the Internet just a few years prior.",
             "Investors flocked to stocks which seemed to be increasing in value for months to years with no end in sight. Many naively overinvested in overvalued stocks, and when the bubble burst in late 2000, a panicked sell-off ensued, lasting two years and bringing the value of the S&P 500 index to nearly half of its 2000 peak. Many investors, and indeed retail investors, experienced financial hardships as a result as a result of their overcommittment into their stock bets.",
-            "Today's market climate seems to have echoes of the dot-com bubble, where retail investors are flocking to primarily technology stocks whose values are currently soaring. Investors should be careful to simply cut all of their losses and completely exit the market in the event of a downturn, however."
+            "Today's market climate seems to have echoes of the dot-com bubble, where retail investors are flocking to primarily technology stocks whose values are currently soaring. As we'll see next, investors should be careful to simply cut all of their losses and completely exit the market in the event of a downturn, however."
         ]
     },
     {
