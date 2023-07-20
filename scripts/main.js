@@ -12,6 +12,7 @@ const canvasWidth = 1000;
 const canvasHeight = 800;
 const sceneTransitionTime = 500;
 const chartTransitionTime = 2000;
+const dateParser = d3.timeParse("%Y-%m-%d");
 
 // Execute the narrative visualization
 init();
@@ -251,6 +252,10 @@ function renderScene2Canvas(dataset) {
         marginTop : 50
     };
 
+    // Create the dataset subset
+    const dateRangeEnd = new Date("2002-09-28");
+    const datasetPreDotComBurst = dataset.filter(d => (dateParser(d.Date) <= dateRangeEnd));
+
     // Create the chart (initially invisible)
     chart.chart = canvas.append("g")
         .attr("height", chart.height)
@@ -267,12 +272,12 @@ function renderScene2Canvas(dataset) {
 
     // Create the x scale
     const x = d3.scaleTime()
-        .domain(d3.extent(dataset, d => d3.timeParse("%Y-%m-%d")(d.Date)))
+        .domain(d3.extent(datasetPreDotComBurst, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
     // Create the y scale
     const y = d3.scaleLinear()
-        .domain(d3.extent(dataset, d => parseFloat(d.Close)))
+        .domain(d3.extent(datasetPreDotComBurst, d => parseFloat(d.Close)))
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
     // Create the x axis
@@ -293,22 +298,39 @@ function renderScene2Canvas(dataset) {
         .call(d3.axisLeft(y))
         // Create the axis label
         .append("text")
-        .text("Change in Value")
+        .text("Value")
         .attr("class", "chart-axis-label")
         .attr("fill", "black")
         .attr("text-anchor", "middle")
         .attr("transform", `translate(-60,${chartAxisYCenter(chart)}) rotate(-90)`);
 
-
-
-
-
+    // Create the line
+    const pathValueSPX = chart.chart.append("path")
+        .datum(datasetPreDotComBurst)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", "1.5px")
+        .attr("d", d3.line()
+            .x((d, i) => x(dateParser(datasetPreDotComBurst[i].Date)))
+            .y((d, i) => y(parseFloat(datasetPreDotComBurst[i].Close)))
+        );
 
     // Perform the chart's entrance transition
     chart.chart.transition()
         .duration(sceneTransitionTime)
         .ease(d3.easeLinear)
         .attr("opacity", "1.0");
+
+    // Perform the line's entrance transition
+    const pathValueSPXLength = pathValueSPX.node().getTotalLength();
+
+    pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
+        .attr("stroke-dasharray", pathValueSPXLength)
+        .transition()
+        .delay(sceneTransitionTime)
+        .duration(chartTransitionTime * 2)
+        .ease(d3.easeQuadOut)
+        .attr("stroke-dashoffset", 0);
 }
 
 // Load scene 0 onto the canvas

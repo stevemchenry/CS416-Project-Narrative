@@ -15,8 +15,9 @@ export const scenes = [
     {
         title: "2000-2002: The Burst of the Dot-com Bubble",
         body : [
-            "In March of 2000, the now-called dot-com bubble, a massive overinflation of a broad swath of technology stocks spurred by the introduction of the Internet in the 1990s, \"burst\", causing such stocks to plummet in value over the next two years.",
-            "A whole lot of people lost a whole lot of money."
+            "The late 1990s saw the previous largest market entry of retail investors during a period now called the \"dot-com bubble\". A wide swath of technology stocks experienced extreme speculative overvaluation spurred by the explosive introduction and growth of the Internet just a few years prior.",
+            "Investors flocked to stocks which seemed to be increasing in value for months to years with no end in sight. Many naively overinvested in overvalued stocks, and when the bubble burst in late 2000, a panicked sell-off ensued, lasting two years and bringing the value of the S&P 500 index to nearly half of its 2000 peak. Many investors, and indeed retail investors, experienced financial hardships as a result as a result of their overcommittment into their stock bets.",
+            "Today's market climate seems to have echoes of the dot-com bubble, where retail investors are flocking to primarily technology stocks whose values are currently soaring. Investors should be careful to simply cut all of their losses and completely exit the market in the event of a downturn, however."
         ]
     },
     {
