@@ -7,12 +7,14 @@ import * as storyContent from "./storyContent.js";
 let canvas = null;
 let storyContainer = null;
 let navigation = null;
-let scene = null;
+const scene = {};
+const datasets = {};
+const charts = {};
 const canvasWidth = 1000;
 const canvasHeight = 800;
 const sceneTransitionTime = 500;
 const chartTransitionTime = 2000;
-const dateParser = d3.timeParse("%Y-%m-%d");
+const dateParser = d3.utcParse("%Y-%m-%d");
 
 // Execute the narrative visualization
 init();
@@ -27,11 +29,34 @@ function init() {
 
     // Create the scene states
     // Any function may observe the sceneState variable, but only loadScene() may modify it
-    scene = {
-        current : 0,
-        viewed : storyContent.scenes.map(a => false),
-        loader : [null, loadScene1, loadScene2, ()=>{}]
+    scene.previous = 0;
+    scene.current = 0;
+    scene.viewed = storyContent.scenes.map(a => false);
+    scene.loader = [null, loadScene1, loadScene2, loadScene3];
+
+    // Create the chart specifications
+    charts.pie = {
+        chart : null,
+        height: canvasHeight,
+        width: canvasWidth,
+        x : (canvasWidth / 2),
+        y : (canvasHeight / 2),
+        innerRadius: 150,
+        outerRadius: 275,
+        markSize : 50
     };
+
+    charts.line = {
+        chart : null,
+        width : canvasWidth,
+        height : canvasHeight,
+        x : 0,
+        y : 0,
+        marginBottom : 50,
+        marginLeft : 70,
+        marginRight : 20,
+        marginTop : 50
+    }
 
     // Set the canvas's dimensions
     canvas.attr("width", canvasWidth)
@@ -43,13 +68,12 @@ function init() {
 
 // Load the specified scene
 function loadScene(sceneNumber) {
-    // Clear the canvas
-    document.getElementById("canvas").replaceChildren();
-
     // Set the new scene as having been viewed
-    scene.viewed[sceneNumber] = true;
+    scene.previous = scene.current;
     scene.current = sceneNumber;
-
+    scene.firstView = !scene.viewed[scene.current];
+    scene.viewed[scene.current] = true;
+    
     // Update the navigation bar
     updateNavigationBar();
 
@@ -69,7 +93,7 @@ function loadScene(sceneNumber) {
     storyContainer.replaceChildren(...nodes);
 
     // Load the scene
-    scene.loader[sceneNumber]();
+    scene.loader[scene.current]();
 }
 
 // Update the navigation bar
@@ -133,14 +157,27 @@ function updateNavigationBar() {
 
 // Load scene 1
 function loadScene1() {
-    // Load the visualization
-    d3.csv("./data/popular-retail-equities-early-2023.csv")
-        .then(renderScene1Canvas);
+    // Load the required dataset if it has not yet been loaded
+    if(datasets.popularRetailEquitiesEarly2023 === undefined) {
+        d3.csv("./data/popular-retail-equities-early-2023.csv")
+            .then(dataset => {
+                datasets.popularRetailEquitiesEarly2023 = dataset;
+                renderScene1Canvas();
+            });
+    
+    } else {
+        renderScene1Canvas();
+    }
 }
 
 // Render scene 1's visualization onto the canvas
-function renderScene1Canvas(dataset) {
+function renderScene1Canvas() {
+    // Get the loaded dataset
+    const dataset = datasets.popularRetailEquitiesEarly2023;
     const data = dataset.map(a => parseInt(a.RetailNetFlowMillions));
+
+    // Clear the canvas
+    document.getElementById("canvas").replaceChildren();
 
     // Declare the chart and its attributes
     const chart = {
@@ -232,25 +269,29 @@ function renderScene1Canvas(dataset) {
 
 // Load scene 2
 function loadScene2() {
-    // Load the visualization
-    d3.csv("./data/spx-historical.csv")
-        .then(renderScene2Canvas);
+    // Load the required dataset if it has not yet been loaded
+    if(datasets.spxHistorical === undefined) {
+        d3.csv("./data/spx-historical.csv")
+            .then(dataset => {
+                datasets.spxHistorical = dataset;
+                renderScene2Canvas();
+            });
+    
+    } else {
+        renderScene2Canvas();
+    }
 }
 
 // Render scene 2's visualization onto the canvas
-function renderScene2Canvas(dataset) {
+function renderScene2Canvas() {
+    // Clear the canvas
+    document.getElementById("canvas").replaceChildren();
+
+    // Get the loaded dataset
+    const dataset = datasets.spxHistorical;
+
     // Declare the chart and its attributes
-    const chart = {
-        chart : null,
-        width : canvasWidth,
-        height : canvasHeight,
-        x : 0,
-        y : 0,
-        marginBottom : 50,
-        marginLeft : 80,
-        marginRight : 20,
-        marginTop : 50
-    };
+    const chart = charts.line;
 
     // Create the dataset subset
     const dateRangeEnd = new Date("2002-09-28");
@@ -267,6 +308,7 @@ function renderScene2Canvas(dataset) {
     chart.chart.append("text")
         .text("S&P 500 (2000-2002)")
         .attr("class", "chart-title")
+        .attr("id", "chart-title")
         .attr("text-anchor", "middle")
         .attr("transform", `translate(${chartTitleCenter(chart)},${chart.marginTop})`);
 
@@ -277,11 +319,12 @@ function renderScene2Canvas(dataset) {
 
     // Create the y scale
     const y = d3.scaleLinear()
-        .domain(d3.extent(datasetPreDotComBurst, d => parseFloat(d.Close)))
+        .domain([600, 1600])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
     // Create the x axis
     chart.chart.append("g")
+        .attr("id", "chart-axis-x")
         .attr("transform", `translate(0,${chart.height - chart.marginBottom})`)
         .call(d3.axisBottom(x))
         // Create the axis label
@@ -294,6 +337,7 @@ function renderScene2Canvas(dataset) {
 
     // Create the y axis
     chart.chart.append("g")
+        .attr("id", "chart-axis-y")
         .attr("transform", `translate(${chart.marginLeft},0)`)
         .call(d3.axisLeft(y))
         // Create the axis label
@@ -302,11 +346,12 @@ function renderScene2Canvas(dataset) {
         .attr("class", "chart-axis-label")
         .attr("fill", "black")
         .attr("text-anchor", "middle")
-        .attr("transform", `translate(-60,${chartAxisYCenter(chart)}) rotate(-90)`);
+        .attr("transform", `translate(-50,${chartAxisYCenter(chart)}) rotate(-90)`);
 
     // Create the line
     const pathValueSPX = chart.chart.append("path")
         .datum(datasetPreDotComBurst)
+        .attr("id", "chart-line-spx")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", "1.5px")
@@ -321,13 +366,106 @@ function renderScene2Canvas(dataset) {
         .ease(d3.easeLinear)
         .attr("opacity", "1.0");
 
-    // Perform the line's entrance transition
+    // Perform the extended line's entrance transition
     const pathValueSPXLength = pathValueSPX.node().getTotalLength();
 
     pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
         .attr("stroke-dasharray", pathValueSPXLength)
         .transition()
         .delay(sceneTransitionTime)
+        .duration(chartTransitionTime * 2)
+        .ease(d3.easeQuadOut)
+        .attr("stroke-dashoffset", 0);
+}
+
+// Load scene 3
+function loadScene3() {
+    // Load the required dataset if it has not yet been loaded
+    if(datasets.spxHistorical === undefined) {
+        d3.csv("./data/spx-historical.csv")
+            .then(dataset => {
+                datasets.spxHistorical = dataset;
+                renderScene3Canvas();
+            });
+    
+    } else {
+        renderScene3Canvas();
+    }
+}
+
+// Render scene 3's visualization onto the canvas
+function renderScene3Canvas() {
+    // Get the loaded dataset
+    const dataset = datasets.spxHistorical;
+
+    // Declare the chart and its attributes
+    const chart = charts.line;
+
+    // Create the dataset subset
+    const dateRangeEnd1 = new Date("2002-09-28");
+    const dateRangeEnd2 = new Date("2007-07-07");
+    const datasetDotComBurst = dataset.filter(d => (dateParser(d.Date) <= dateRangeEnd1));
+    const dataset2000sGrowthPeriod = dataset.filter(d => ((dateParser(d.Date) >= dateRangeEnd1) && (dateParser(d.Date) <= dateRangeEnd2)));
+    const datasetPreGreatRecession = dataset.filter(d => (dateParser(d.Date) <= dateRangeEnd2));
+
+    
+    
+    console.log(dateParser("2002-09-28"))
+    console.log("<=")
+    console.log(dateRangeEnd1)
+
+    console.log()
+
+    // Create the x scale
+    const x = d3.scaleTime()
+        .domain(d3.extent(datasetPreGreatRecession, d => dateParser(d.Date)))
+        .range([chart.marginLeft, (chart.width - chart.marginRight)]);
+
+    // Create the y scale
+    const y = d3.scaleLinear()
+        .domain([600, 1600])
+        .range([(chart.height - chart.marginBottom), chart.marginTop]);
+
+    // Create the x axis
+    chart.chart.select("#chart-axis-x")
+        .transition()
+        .duration(chartTransitionTime)
+        .ease(d3.easeCubic)
+        .call(d3.axisBottom(x))
+
+    // Perform the line compression transition
+    chart.chart.select("#chart-line-spx")
+        // If the previous slide was still performing a line transition, interrupt it and snap-complete it
+        .interrupt()
+        .attr("stroke-dashoffset", 0)
+        // Perform the line compression transition
+        .transition()
+        .duration(chartTransitionTime)
+        .ease(d3.easeCubic)
+        .attr("d", d3.line()
+            .x((d, i) => x(dateParser(datasetDotComBurst[i].Date)))
+            .y((d, i) => y(parseFloat(datasetDotComBurst[i].Close)))
+        );
+
+    // Create the extended line
+    const pathValueSPX = chart.chart.append("path")
+        .datum(dataset2000sGrowthPeriod)
+        .attr("id", "chart-line-spx-2")
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", "1.5px")
+        .attr("d", d3.line()
+            .x((d, i) => x(dateParser(dataset2000sGrowthPeriod[i].Date)))
+            .y((d, i) => y(parseFloat(dataset2000sGrowthPeriod[i].Close)))
+        );
+
+    // Perform the extended line's entrance transition
+    const pathValueSPXLength = pathValueSPX.node().getTotalLength();
+
+    pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
+        .attr("stroke-dasharray", pathValueSPXLength)
+        .transition()
+        .delay(chartTransitionTime)
         .duration(chartTransitionTime * 2)
         .ease(d3.easeQuadOut)
         .attr("stroke-dashoffset", 0);
