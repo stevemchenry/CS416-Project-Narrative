@@ -26,5 +26,13 @@ export const scenes = [
             "After the lowest point of the dot-com burst in early 2002, the market entered a period of slow, but overall steady growth to about its former levels around the peak of the dot-com burst",
             "A whole lot of people made a whole lot of money."
         ]
+    },
+    {
+        title : "2007-2009: The Great Recession",
+        body : []
+    },
+    {
+        title : "2009-2023: The Rest of the Story",
+        body: []
     }
 ]
