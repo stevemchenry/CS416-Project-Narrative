@@ -55,7 +55,13 @@ function init() {
         marginBottom : 50,
         marginLeft : 70,
         marginRight : 20,
-        marginTop : 50
+        marginTop : 50,
+        phases : {
+            dotComBurst : {},
+            growthPeriod2000s : {},
+            greatRecession : {},
+            postGreatRecession : {}
+        }
     }
 
     // Set the canvas's dimensions
@@ -287,15 +293,13 @@ function renderScene2Canvas() {
     // Clear the canvas
     document.getElementById("canvas").replaceChildren();
 
-    // Get the loaded dataset
-    const dataset = datasets.spxHistorical;
-
-    // Declare the chart and its attributes
+    // Create an alias for the chart used by this scene
     const chart = charts.line;
 
     // Create the dataset subset
-    const dateRangeEnd = new Date("2002-09-28");
-    const datasetPreDotComBurst = dataset.filter(d => (dateParser(d.Date) <= dateRangeEnd));
+    chart.phases.dotComBurst.dateEnd = new Date("2002-09-28");
+    chart.phases.dotComBurst.dataSubset = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.dotComBurst.dateEnd));
+    const dataDotComBurst = chart.phases.dotComBurst.dataSubset;
 
     // Create the chart (initially invisible)
     chart.chart = canvas.append("g")
@@ -312,21 +316,28 @@ function renderScene2Canvas() {
         .attr("text-anchor", "middle")
         .attr("transform", `translate(${chartTitleCenter(chart)},${chart.marginTop})`);
 
+    // Create the dot-com burst scales
+    chart.phases.dotComBurst.scales = {};
+
     // Create the x scale
-    const x = d3.scaleTime()
-        .domain(d3.extent(datasetPreDotComBurst, d => dateParser(d.Date)))
+    chart.phases.dotComBurst.scales.x = d3.scaleTime()
+        .domain(d3.extent(dataDotComBurst, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
+    const scaleX = chart.phases.dotComBurst.scales.x;
+
     // Create the y scale
-    const y = d3.scaleLinear()
+    chart.phases.dotComBurst.scales.y = d3.scaleLinear()
         .domain([600, 1600])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
+
+    const scaleY = chart.phases.dotComBurst.scales.y;
 
     // Create the x axis
     chart.chart.append("g")
         .attr("id", "chart-axis-x")
         .attr("transform", `translate(0,${chart.height - chart.marginBottom})`)
-        .call(d3.axisBottom(x))
+        .call(d3.axisBottom(scaleX))
         // Create the axis label
         .append("text")
         .text("Date")
@@ -339,7 +350,7 @@ function renderScene2Canvas() {
     chart.chart.append("g")
         .attr("id", "chart-axis-y")
         .attr("transform", `translate(${chart.marginLeft},0)`)
-        .call(d3.axisLeft(y))
+        .call(d3.axisLeft(scaleY))
         // Create the axis label
         .append("text")
         .text("Value")
@@ -350,14 +361,14 @@ function renderScene2Canvas() {
 
     // Create the line
     const pathValueSPX = chart.chart.append("path")
-        .datum(datasetPreDotComBurst)
+        .datum(dataDotComBurst)
         .attr("id", "chart-line-spx")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", "1.5px")
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(datasetPreDotComBurst[i].Date)))
-            .y((d, i) => y(parseFloat(datasetPreDotComBurst[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataDotComBurst[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
         );
 
     // Perform the chart's entrance transition
@@ -395,35 +406,40 @@ function loadScene3() {
 
 // Render scene 3's visualization onto the canvas
 function renderScene3Canvas() {
-    // Get the loaded dataset
-    const dataset = datasets.spxHistorical;
-
-    // Declare the chart and its attributes
+    // Create an alias for the chart used by this scene
     const chart = charts.line;
 
     // Create the dataset subset
-    const dateRangeEnd1 = new Date("2002-09-28");
-    const dateRangeEnd2 = new Date("2007-07-07");
-    const datasetDotComBurst = dataset.filter(d => (dateParser(d.Date) <= dateRangeEnd1));
-    const dataset2000sGrowthPeriod = dataset.filter(d => ((dateParser(d.Date) >= dateRangeEnd1) && (dateParser(d.Date) <= dateRangeEnd2)));
-    const datasetPreGreatRecession = dataset.filter(d => (dateParser(d.Date) <= dateRangeEnd2));
+    chart.phases.growthPeriod2000s.dateEnd = new Date("2007-07-07");
+    chart.phases.growthPeriod2000s.dataSubset = datasets.spxHistorical.filter(d => ((dateParser(d.Date) >= chart.phases.dotComBurst.dateEnd) && (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd)));
+    const dataSubsetThroughNow = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd));
+
+    const dataDotComBurst = chart.phases.dotComBurst.dataSubset;
+    const dataGrowthPeriod2000s = chart.phases.growthPeriod2000s.dataSubset;
+
+    // Create the 2000s growth period scales
+    chart.phases.growthPeriod2000s.scales = {};
 
     // Create the x scale
-    const x = d3.scaleTime()
-        .domain(d3.extent(datasetPreGreatRecession, d => dateParser(d.Date)))
+    chart.phases.growthPeriod2000s.scales.x = d3.scaleTime()
+        .domain(d3.extent(dataSubsetThroughNow, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
-    // Create the y scale
-    const y = d3.scaleLinear()
+    const scaleX = chart.phases.growthPeriod2000s.scales.x;
+
+    // Create the y scale (this should be the same as the previous phase)
+    chart.phases.growthPeriod2000s.scales.y = d3.scaleLinear()
         .domain([600, 1600])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
-    // Create the x axis
+    const scaleY = chart.phases.growthPeriod2000s.scales.y;
+
+    // Re-scale the x axis
     chart.chart.select("#chart-axis-x")
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
-        .call(d3.axisBottom(x))
+        .call(d3.axisBottom(scaleX))
 
     // Perform the line compression transition
     chart.chart.select("#chart-line-spx")
@@ -435,20 +451,20 @@ function renderScene3Canvas() {
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(datasetDotComBurst[i].Date)))
-            .y((d, i) => y(parseFloat(datasetDotComBurst[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataDotComBurst[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
         );
 
     // Create the extended line
     const pathValueSPX = chart.chart.append("path")
-        .datum(dataset2000sGrowthPeriod)
+        .datum(dataGrowthPeriod2000s)
         .attr("id", "chart-line-spx-2")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", "1.5px")
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(dataset2000sGrowthPeriod[i].Date)))
-            .y((d, i) => y(parseFloat(dataset2000sGrowthPeriod[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataGrowthPeriod2000s[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataGrowthPeriod2000s[i].Close)))
         );
 
     // Perform the extended line's entrance transition
@@ -492,50 +508,58 @@ function loadScene4() {
 
 // Render scene 3's visualization onto the canvas
 function renderScene4Canvas() {
-    // Get the loaded dataset
-    const dataset = datasets.spxHistorical;
-
-    // Declare the chart and its attributes
+    // Create an alias for the chart used by this scene
     const chart = charts.line;
 
     // Create the dataset subset
-    const dateRangeEnd1 = new Date("2002-09-28");
-    const dateRangeEnd2 = new Date("2007-07-07");
-    const dateRangeEnd3 = new Date("2009-02-28");
-    const datasetDotComBurst = dataset.filter(d => (dateParser(d.Date) <= dateRangeEnd1));
-    const dataset2000sGrowthPeriod = dataset.filter(d => ((dateParser(d.Date) >= dateRangeEnd1) && (dateParser(d.Date) <= dateRangeEnd2)));
-    const datasetGreatRecession = dataset.filter(d => ((dateParser(d.Date) >= dateRangeEnd2) && (dateParser(d.Date) <= dateRangeEnd3)));
-    const datasetPostGreatRecession = dataset.filter(d => (dateParser(d.Date) <= dateRangeEnd3));
+    chart.phases.greatRecession.dateEnd = new Date("2009-02-28");
+    chart.phases.greatRecession.dataSubset = datasets.spxHistorical.filter(d => ((dateParser(d.Date) >= chart.phases.growthPeriod2000s.dateEnd) && (dateParser(d.Date) <= chart.phases.greatRecession.dateEnd)));
+    const dataSubsetThroughNow = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.greatRecession.dateEnd));
+
+    const dataDotComBurst = chart.phases.dotComBurst.dataSubset;
+    const dataGrowthPeriod2000s = chart.phases.growthPeriod2000s.dataSubset;
+    const dataGreatRecession = chart.phases.greatRecession.dataSubset;
+
+    // Create the great recession scales
+    chart.phases.greatRecession.scales = {};
 
     // Create the x scale
-    const x = d3.scaleTime()
-        .domain(d3.extent(datasetPostGreatRecession, d => dateParser(d.Date)))
+    chart.phases.greatRecession.scales.x = d3.scaleTime()
+        .domain(d3.extent(dataSubsetThroughNow, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
-    // Create the y scale
-    const y = d3.scaleLinear()
+    const scaleX = chart.phases.greatRecession.scales.x;
+
+    // Create the y scale (this should be the same as the previous two phases)
+    chart.phases.greatRecession.scales.y = d3.scaleLinear()
         .domain([600, 1600])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
-    // Create the x axis
+    const scaleY = chart.phases.greatRecession.scales.y;
+
+    // Re-scale the x axis
     chart.chart.select("#chart-axis-x")
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
-        .call(d3.axisBottom(x))
+        .call(d3.axisBottom(scaleX));
 
     // Perform the line compression transition
     chart.chart.select("#chart-line-spx")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
+        .attr("d", d3.line()
+            .x((d, i) => chart.phases.growthPeriod2000s.scales.x(dateParser(dataDotComBurst[i].Date)))
+            .y((d, i) => chart.phases.growthPeriod2000s.scales.y(parseFloat(dataDotComBurst[i].Close)))
+        )
         // Perform the line compression transition
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(datasetDotComBurst[i].Date)))
-            .y((d, i) => y(parseFloat(datasetDotComBurst[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataDotComBurst[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
         );
 
     chart.chart.select("#chart-line-spx-2")
@@ -547,20 +571,20 @@ function renderScene4Canvas() {
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(dataset2000sGrowthPeriod[i].Date)))
-            .y((d, i) => y(parseFloat(dataset2000sGrowthPeriod[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataGrowthPeriod2000s[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataGrowthPeriod2000s[i].Close)))
         );
 
     // Create the extended line
     const pathValueSPX = chart.chart.append("path")
-        .datum(datasetGreatRecession)
+        .datum(dataGreatRecession)
         .attr("id", "chart-line-spx-3")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", "1.5px")
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(datasetGreatRecession[i].Date)))
-            .y((d, i) => y(parseFloat(datasetGreatRecession[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataGreatRecession[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataGreatRecession[i].Close)))
         );
 
     // Perform the extended line's entrance transition
@@ -583,14 +607,14 @@ function renderScene4Canvas() {
 
 
 
-// Load scene 4
+// Load scene 5
 function loadScene5() {
     // Load the required dataset if it has not yet been loaded
     if(datasets.spxHistorical === undefined) {
         d3.csv("./data/spx-historical.csv")
             .then(dataset => {
                 datasets.spxHistorical = dataset;
-                renderScene4Canvas();
+                renderScene5Canvas();
             });
     
     } else {
@@ -598,65 +622,82 @@ function loadScene5() {
     }
 }
 
-// Render scene 3's visualization onto the canvas
+// Render scene 5's visualization onto the canvas
 function renderScene5Canvas() {
-    // Get the loaded dataset
-    const dataset = datasets.spxHistorical;
-
     // Declare the chart and its attributes
     const chart = charts.line;
 
     // Create the dataset subset
-    const dateRangeEnd1 = new Date("2002-09-28");
-    const dateRangeEnd2 = new Date("2007-07-07");
-    const dateRangeEnd3 = new Date("2009-02-28");
-    const datasetDotComBurst = dataset.filter(d => (dateParser(d.Date) <= dateRangeEnd1));
-    const dataset2000sGrowthPeriod = dataset.filter(d => ((dateParser(d.Date) >= dateRangeEnd1) && (dateParser(d.Date) <= dateRangeEnd2)));
-    const datasetGreatRecession = dataset.filter(d => ((dateParser(d.Date) >= dateRangeEnd2) && (dateParser(d.Date) <= dateRangeEnd3)));
-    const datasetEnd = dataset.filter(d => (dateParser(d.Date) >= dateRangeEnd3));
+    const dataPostGreatRecession = datasets.spxHistorical.filter(d => (dateParser(d.Date) >= chart.phases.greatRecession.dateEnd));
+
+    const dataDotComBurst = chart.phases.dotComBurst.dataSubset;
+    const dataGrowthPeriod2000s = chart.phases.growthPeriod2000s.dataSubset;
+    const dataGreatRecession = chart.phases.greatRecession.dataSubset;
+
+    // Create the great recession scales
+    chart.phases.postGreatRecession.scales = {};
 
     // Create the x scale
-    const x = d3.scaleTime()
-        .domain(d3.extent(dataset, d => dateParser(d.Date)))
+    chart.phases.postGreatRecession.scales.x = d3.scaleTime()
+        .domain(d3.extent(datasets.spxHistorical, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
-    // Create the y scale
-    const y = d3.scaleLinear()
+    const scaleX = chart.phases.postGreatRecession.scales.x;
+
+    // Create the y scale (this scale differs from the previous three scenes)
+    chart.phases.postGreatRecession.scales.y = d3.scaleLinear()
         .domain([600, 4600])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
-    // Create the x axis
+    const scaleY = chart.phases.postGreatRecession.scales.y;
+
+    // Re-scale the x axis
     chart.chart.select("#chart-axis-x")
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
-        .call(d3.axisBottom(x))
+        .call(d3.axisBottom(scaleX));
+
+    // Re-scale the y axis
+    chart.chart.select("#chart-axis-y")
+        .transition()
+        .duration(chartTransitionTime)
+        .ease(d3.easeCubic)
+        .call(d3.axisLeft(scaleY));
 
     // Perform the line compression transition
     chart.chart.select("#chart-line-spx")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
+        .attr("d", d3.line()
+            .x((d, i) => chart.phases.greatRecession.scales.x(dateParser(dataDotComBurst[i].Date)))
+            .y((d, i) => chart.phases.greatRecession.scales.y(parseFloat(dataDotComBurst[i].Close)))
+        )
         // Perform the line compression transition
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(datasetDotComBurst[i].Date)))
-            .y((d, i) => y(parseFloat(datasetDotComBurst[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataDotComBurst[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
         );
 
     chart.chart.select("#chart-line-spx-2")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
+        .attr("d", d3.line()
+            .x((d, i) => chart.phases.greatRecession.scales.x(dateParser(dataGrowthPeriod2000s[i].Date)))
+            .y((d, i) => chart.phases.greatRecession.scales.y(parseFloat(dataGrowthPeriod2000s[i].Close)))
+        )
         // Perform the line compression transition
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(dataset2000sGrowthPeriod[i].Date)))
-            .y((d, i) => y(parseFloat(dataset2000sGrowthPeriod[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataGrowthPeriod2000s[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataGrowthPeriod2000s[i].Close)))
         );
 
     chart.chart.select("#chart-line-spx-3")
@@ -668,20 +709,20 @@ function renderScene5Canvas() {
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(datasetGreatRecession[i].Date)))
-            .y((d, i) => y(parseFloat(datasetGreatRecession[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataGreatRecession[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataGreatRecession[i].Close)))
         );
 
     // Create the extended line
     const pathValueSPX = chart.chart.append("path")
-        .datum(datasetEnd)
+        .datum(dataPostGreatRecession)
         .attr("id", "chart-line-spx-4")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", "1.5px")
         .attr("d", d3.line()
-            .x((d, i) => x(dateParser(datasetEnd[i].Date)))
-            .y((d, i) => y(parseFloat(datasetEnd[i].Close)))
+            .x((d, i) => scaleX(dateParser(dataPostGreatRecession[i].Date)))
+            .y((d, i) => scaleY(parseFloat(dataPostGreatRecession[i].Close)))
         );
 
     // Perform the extended line's entrance transition
@@ -693,112 +734,6 @@ function renderScene5Canvas() {
         .delay(chartTransitionTime)
         .duration(chartTransitionTime * 2)
         .ease(d3.easeQuadOut)
-        .attr("stroke-dashoffset", 0);
-}
-
-
-
-
-
-
-
-
-
-
-
-// Load scene 0 onto the canvas
-function loadScene0() {
-    // Initialize the small sample data set
-    const jokeDataDates = ["Two Days Ago", "Yesterday", "Today", "Tomorrow", "Two Days From Now"];
-    const jokeDataValues = [0.0, 30.0, 37.0, 60.0, 100.0];
-
-    // Declare the chart and its attributes
-    const chart = {
-        chart : null,
-        width : canvasWidth,
-        height : canvasHeight,
-        x : 0,
-        y : 0,
-        marginBottom : 50,
-        marginLeft : 80,
-        marginRight : 20,
-        marginTop : 50
-    };
-
-    // Create the chart (initially invisible)
-    chart.chart = canvas.append("g")
-        .attr("height", chart.height)
-        .attr("width", chart.width)
-        .attr("transform", `translate(${chart.x},${chart.y})`)
-        .attr("opacity", "0.0");
-
-    // Create the chart title
-    chart.chart.append("text")
-        .text("Unrealistic Expectations of Returns")
-        .attr("class", "chart-title")
-        .attr("text-anchor", "middle")
-        .attr("transform", `translate(${chartTitleCenter(chart)},30)`);
-
-    // Create the x scale
-    const x = d3.scaleBand()
-        .domain(jokeDataDates)
-        .range([chart.marginLeft, (chart.width - chart.marginRight)]);
-
-    // Create the y scale
-    const y = d3.scaleLinear()
-        .domain([0, 100])
-        .range([(chart.height - chart.marginBottom), chart.marginTop]);
-
-    // Create the x axis
-    chart.chart.append("g")
-        .attr("transform", `translate(0,${chart.height - chart.marginBottom})`)
-        .call(d3.axisBottom(x))
-        // Create the axis label
-        .append("text")
-        .text("Date")
-        .attr("class", "chart-axis-label")
-        .attr("fill", "black")
-        .attr("text-anchor", "middle")
-        .attr("transform", `translate(${chartAxisXCenter(chart)},35)`);
-
-    // Create the y axis
-    chart.chart.append("g")
-        .attr("transform", `translate(${chart.marginLeft},0)`)
-        .call(d3.axisLeft(y).tickFormat(d3.format(",.0%")))
-        // Create the axis label
-        .append("text")
-        .text("Change in Value")
-        .attr("class", "chart-axis-label")
-        .attr("fill", "black")
-        .attr("text-anchor", "middle")
-        .attr("transform", `translate(-60,${chartAxisYCenter(chart)}) rotate(-90)`);
-
-    // Create the line
-    const jokeDataPath = chart.chart.append("path")
-        .datum(jokeDataValues)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", "1.5px")
-        .attr("d", d3.line()
-            .x(function(d, i) { return x(jokeDataDates[i]) + (x.bandwidth() / 2); })
-            .y(function(d) { return y(d); })
-        );
-
-    // Perform the chart's entrance transition
-    chart.chart.transition()
-        .duration(sceneTransitionTime)
-        .ease(d3.easeLinear)
-        .attr("opacity", "1.0");
-    
-    // Perform the line's entrance transition
-    const jokeDataPathLength = jokeDataPath.node().getTotalLength();
-
-    jokeDataPath.attr("stroke-dashoffset", jokeDataPathLength)
-        .attr("stroke-dasharray", jokeDataPathLength)
-        .transition()
-        .delay(sceneTransitionTime)
-        .duration(2500)
-        .ease(d3.easeCubic)
         .attr("stroke-dashoffset", 0);
 }
 
