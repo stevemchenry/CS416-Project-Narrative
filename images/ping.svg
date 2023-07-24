@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1"
+	 id="Layer_1" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="50px" height="50px" xml:space="preserve">
+<g>
+<circle fill="none" stroke-width="1.5" stroke="#f80" r="4" cx="25" cy="25">
+    <animate attributeName="r" from="6" to="22" dur="2s" repeatCount="indefinite" />
+	<animate attributeName="stroke-opacity" from="1.0" to="0.0" dur="2s" repeatCount="indefinite" />
+</circle>
+<circle fill="#fa0" r="7" cx="25" cy="25" />
+</g>
+</svg>

@@ -195,7 +195,7 @@ function renderScene1Canvas() {
         innerRadius: 150,
         outerRadius: 275,
         markSize : 50
-    };    
+    };
 
     // Create the chart element and set its dimensions and position
     chart.chart = canvas.append("g")
@@ -204,8 +204,12 @@ function renderScene1Canvas() {
         .attr("transform", `translate(${chart.x},${chart.y})`);
 
     // Create the chart title
-    chart.chart.append("text")
-        .text("Retail Investors' Top 10 Picks for Early 2023")
+    const chartTitleGroup = chart.chart.append("g")
+        .attr("id", "chart-title-group");
+
+    chartTitleGroup.datum("Retail Investors' Top 10 Picks for Early 2023")
+        .append("text")
+        .text(d => d)
         .attr("class", "chart-title")
         .attr("text-anchor", "middle")
         .attr("transform", `translate(${chartTitleCenter(chart) - chart.x},${50 - chart.y})`);
@@ -217,7 +221,10 @@ function renderScene1Canvas() {
         .outerRadius(chart.outerRadius);
 
     // Create the pie chart and its entrance transition
-    chart.chart.selectAll("path")
+    const chartGraphGroup = chart.chart.append("g")
+        .attr("id", "chart-graph-group");
+
+    chartGraphGroup.selectAll("path")
         .data(pie(data))
         .enter()
         .append("path")
@@ -241,7 +248,7 @@ function renderScene1Canvas() {
         });
 
     // Create the pie chart wedge icons and their entrance transition
-    chart.chart.selectAll("image")
+    chartGraphGroup.selectAll("image")
         .data(pie(data))
         .enter()
         .append("image")
@@ -255,8 +262,8 @@ function renderScene1Canvas() {
         .duration(500)
         .attr("opacity", 1.0);
 
-    // Create the sum counter
-    chart.chart.datum(data.reduce((accumulator, currentValue) => (accumulator + currentValue), 0))
+    // Create the text value sum counter
+    chartGraphGroup.datum(data.reduce((accumulator, currentValue) => (accumulator + currentValue), 0))
         .append("text")
         .attr("fill", "black")
         .attr("text-anchor", "middle")
@@ -271,6 +278,24 @@ function renderScene1Canvas() {
                 this.textContent = `$${formatterNumberThousands(Math.round(textInterpolation(t)))}M`;
             };
         });
+
+    // Create the tooltip ping icons
+    const chartTooltipPingGroup = chart.chart.append("g")
+        .attr("id", "chart-tooltip-ping-group");
+
+    chartTooltipPingGroup.selectAll("image")
+        .data(pie(data))
+        .enter()
+        .append("image")
+        .attr("opacity", 0.0)
+        .attr("href", "./images/ping.svg")
+        .attr("width", chart.markSize)
+        .attr("height", chart.markSize)
+        .attr("transform", d => `translate(${(arc.centroid(d)[0] * 1.3) - (chart.markSize / 2)},${(arc.centroid(d)[1] * 1.3) - (chart.markSize / 2)})`)
+        .transition()
+        .delay(chartTransitionTime * 1.5)
+        .duration(1000)
+        .attr("opacity", 1.0);
 }
 
 // Load scene 2
