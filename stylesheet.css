@@ -125,8 +125,9 @@ nav > ul > li:not(:first-of-type) {
 .tooltip {
     background-color: #e0e0e0;
     border: solid 1px #aaa;
-    position: absolute;
+    position: fixed;
     padding: 3px;
+    pointer-events: none;
 }
 
 #visualization {

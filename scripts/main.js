@@ -46,13 +46,11 @@ function init() {
         markSize : 50,
         tooltip : {
             selection : null,
-            height: 75,
-            width: 200
         }
     };
 
     charts.line = {
-        chart : null,
+        selection : null,
         width : canvasWidth,
         height : canvasHeight,
         x : 0,
@@ -66,6 +64,9 @@ function init() {
             growthPeriod2000s : {},
             greatRecession : {},
             postGreatRecession : {}
+        },
+        tooltip : {
+            selection : null,
         }
     }
 
@@ -183,6 +184,9 @@ function loadScene1() {
 
 // Render scene 1's visualization onto the canvas
 function renderScene1Canvas() {
+    // Create an alias for the chart used by this scene
+    const chart = charts.pie;
+
     // Get the loaded dataset
     const dataset = datasets.popularRetailEquitiesEarly2023;
     const data = dataset.map(a => parseInt(a.RetailNetFlowMillions));
@@ -190,9 +194,6 @@ function renderScene1Canvas() {
 
     // Clear the canvas
     document.getElementById("canvas").replaceChildren();
-
-    // Get an alias to this scene's chart
-    const chart = charts.pie;
 
     // Create the chart element and set its dimensions and position
     chart.selection = canvas.append("g")
@@ -231,9 +232,9 @@ function renderScene1Canvas() {
             chart.selection.select("#chart-tooltip-ping-group").remove()
             
             // Create the tooltip
-            const title = `<div style="font-weight:bold;">${dataset[d.index].CompanyName} (${dataset[d.index].Ticker})</div>
-                <div>$${d3.format(",")(dataset[d.index].RetailNetFlowMillions)}M (${(dataset[d.index].RetailNetFlowMillions * 100 / retailNetFlowMillionsTotal).toFixed(2)}%)</div>` ;
-            chart.tooltip.selection = createTooltip(chart.selection, title, chart.tooltip.height, chart.tooltip.width)
+            const tooltipContent = `<div style="font-weight:bold;">${dataset[d.index].CompanyName} (${dataset[d.index].Ticker})</div>
+                <div>$${d3.format(",")(dataset[d.index].RetailNetFlowMillions)}M (${(dataset[d.index].RetailNetFlowMillions * 100 / retailNetFlowMillionsTotal).toFixed(2)}%)</div>`;
+            chart.tooltip.selection = createTooltip(tooltipContent)
                 .style("left", `${e.clientX}px`)
                 .style("top", `${e.clientY + 22}px`)
         })
@@ -332,9 +333,6 @@ function loadScene2() {
 
 // Render scene 2's visualization onto the canvas
 function renderScene2Canvas() {
-    // Clear the canvas
-    document.getElementById("canvas").replaceChildren();
-
     // Create an alias for the chart used by this scene
     const chart = charts.line;
 
@@ -343,18 +341,24 @@ function renderScene2Canvas() {
     chart.phases.dotComBurst.dataSubset = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.dotComBurst.dateEnd));
     const dataDotComBurst = chart.phases.dotComBurst.dataSubset;
 
+    // Clear the canvas
+    document.getElementById("canvas").replaceChildren();
+
     // Create the chart (initially invisible)
-    chart.chart = canvas.append("g")
+    chart.selection = canvas.append("g")
         .attr("height", chart.height)
         .attr("width", chart.width)
         .attr("transform", `translate(${chart.x},${chart.y})`)
         .attr("opacity", "0.0");
 
     // Create the chart title
-    chart.chart.append("text")
-        .text("S&P 500 (2000-2002)")
+    const chartTitleGroup = chart.selection.append("g")
+        .attr("id", "chart-title-group");
+
+    chartTitleGroup.datum("S&P 500 (2000-2002)")
+        .append("text")
+        .text(d => d)
         .attr("class", "chart-title")
-        .attr("id", "chart-title")
         .attr("text-anchor", "middle")
         .attr("transform", `translate(${chartTitleCenter(chart)},${chart.marginTop})`);
 
@@ -376,7 +380,7 @@ function renderScene2Canvas() {
     const scaleY = chart.phases.dotComBurst.scales.y;
 
     // Create the x axis
-    chart.chart.append("g")
+    chart.selection.append("g")
         .attr("id", "chart-axis-x")
         .attr("transform", `translate(0,${chart.height - chart.marginBottom})`)
         .call(d3.axisBottom(scaleX))
@@ -389,7 +393,7 @@ function renderScene2Canvas() {
         .attr("transform", `translate(${chartAxisXCenter(chart)},35)`);
 
     // Create the y axis
-    chart.chart.append("g")
+    chart.selection.append("g")
         .attr("id", "chart-axis-y")
         .attr("transform", `translate(${chart.marginLeft},0)`)
         .call(d3.axisLeft(scaleY))
@@ -402,9 +406,12 @@ function renderScene2Canvas() {
         .attr("transform", `translate(-50,${chartAxisYCenter(chart)}) rotate(-90)`);
 
     // Create the line
-    const pathValueSPX = chart.chart.append("path")
-        .datum(dataDotComBurst)
-        .attr("id", "chart-line-spx")
+    const chartGraphGroup = chart.selection.append("g")
+        .attr("id", "chart-graph-group");
+
+    const pathValueSPX = chartGraphGroup.datum(dataDotComBurst)
+        .append("path")
+        .attr("id", "chart-graph-line-spx")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", "1.5px")
@@ -413,13 +420,63 @@ function renderScene2Canvas() {
             .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
         );
 
+    // Create the tooltip hitbox
+    const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
+    const segmentWidth = graphWidth / dataDotComBurst.length;
+    const segmentWidthHalf = segmentWidth / 2
+    console.log(segmentWidth);
+    console.log(dataDotComBurst.length)
+
+    chartGraphGroup.append("rect")
+        .attr("id", "chart-tooltip-hitbox")
+        .attr("width", (chart.width - chart.marginRight - chart.marginLeft))
+        .attr("height", (chart.height - chart.marginBottom - chart.marginTop))
+        .attr("x", chart.marginLeft)
+        .attr("y", chart.marginTop)
+        .attr("opacity", "0.0")
+        .on("mouseover", (e, d) => {
+            // Remove tooltip pings if present
+            chart.selection.select("#chart-tooltip-ping-group").remove()
+            
+            // Create the tooltip
+            const pointer = d3.pointer(e);
+            const tooltipContent = `<div style="font-weight:bold;">Test</div>`;
+            chart.tooltip.selection = createTooltip(tooltipContent)
+                .style("left", `${e.clientX}px`)
+                .style("top", `${140}px`)
+        })
+        .on("mouseout", () => removeTooltip(chart.tooltip.selection))
+        .on("mousemove", e => {
+            // Move the tooltip
+            const pointer = d3.pointer(e);
+            const closestXPoint = ((pointer[0] - chart.marginLeft - segmentWidthHalf) / segmentWidth);
+            console.log(Math.round(closestXPoint));
+            chart.tooltip.selection
+                .style("left", `${e.clientX 
+                    + (closestXPoint * (segmentWidth / 2))}px`)
+                .style("top", `${140}px`)
+        })
+
+    // Create the annotations
+    const annotations = chart.selection.append("g")
+        .attr("id", "chart-annotations")
+    
+    annotations.append("path")
+        .attr("fill", "none")
+        .attr("stroke", "#444")
+        .attr("stroke-width", "1")
+        .attr("stroke-dasharray", "2")
+        .attr("d", `M100,200L100,350`)
+        
+
+
     // Perform the chart's entrance transition
-    chart.chart.transition()
+    chart.selection.transition()
         .duration(sceneTransitionTime)
         .ease(d3.easeLinear)
         .attr("opacity", "1.0");
 
-    // Perform the extended line's entrance transition
+    // Perform the line's entrance transition
     const pathValueSPXLength = pathValueSPX.node().getTotalLength();
 
     pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
@@ -477,14 +534,14 @@ function renderScene3Canvas() {
     const scaleY = chart.phases.growthPeriod2000s.scales.y;
 
     // Re-scale the x axis
-    chart.chart.select("#chart-axis-x")
+    chart.selection.select("#chart-axis-x")
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .call(d3.axisBottom(scaleX))
 
     // Perform the line compression transition
-    chart.chart.select("#chart-line-spx")
+    chart.selection.select("#chart-line-spx")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
@@ -498,7 +555,7 @@ function renderScene3Canvas() {
         );
 
     // Create the extended line
-    const pathValueSPX = chart.chart.append("path")
+    const pathValueSPX = chart.selection.append("path")
         .datum(dataGrowthPeriod2000s)
         .attr("id", "chart-line-spx-2")
         .attr("fill", "none")
@@ -580,14 +637,14 @@ function renderScene4Canvas() {
     const scaleY = chart.phases.greatRecession.scales.y;
 
     // Re-scale the x axis
-    chart.chart.select("#chart-axis-x")
+    chart.selection.select("#chart-axis-x")
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .call(d3.axisBottom(scaleX));
 
     // Perform the line compression transition
-    chart.chart.select("#chart-line-spx")
+    chart.selection.select("#chart-line-spx")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
@@ -604,7 +661,7 @@ function renderScene4Canvas() {
             .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
         );
 
-    chart.chart.select("#chart-line-spx-2")
+    chart.selection.select("#chart-line-spx-2")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
@@ -618,7 +675,7 @@ function renderScene4Canvas() {
         );
 
     // Create the extended line
-    const pathValueSPX = chart.chart.append("path")
+    const pathValueSPX = chart.selection.append("path")
         .datum(dataGreatRecession)
         .attr("id", "chart-line-spx-3")
         .attr("fill", "none")
@@ -694,21 +751,21 @@ function renderScene5Canvas() {
     const scaleY = chart.phases.postGreatRecession.scales.y;
 
     // Re-scale the x axis
-    chart.chart.select("#chart-axis-x")
+    chart.selection.select("#chart-axis-x")
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .call(d3.axisBottom(scaleX));
 
     // Re-scale the y axis
-    chart.chart.select("#chart-axis-y")
+    chart.selection.select("#chart-axis-y")
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
         .call(d3.axisLeft(scaleY));
 
     // Perform the line compression transition
-    chart.chart.select("#chart-line-spx")
+    chart.selection.select("#chart-line-spx")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
@@ -725,7 +782,7 @@ function renderScene5Canvas() {
             .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
         );
 
-    chart.chart.select("#chart-line-spx-2")
+    chart.selection.select("#chart-line-spx-2")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
@@ -742,7 +799,7 @@ function renderScene5Canvas() {
             .y((d, i) => scaleY(parseFloat(dataGrowthPeriod2000s[i].Close)))
         );
 
-    chart.chart.select("#chart-line-spx-3")
+    chart.selection.select("#chart-line-spx-3")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
@@ -756,7 +813,7 @@ function renderScene5Canvas() {
         );
 
     // Create the extended line
-    const pathValueSPX = chart.chart.append("path")
+    const pathValueSPX = chart.selection.append("path")
         .datum(dataPostGreatRecession)
         .attr("id", "chart-line-spx-4")
         .attr("fill", "none")
@@ -800,16 +857,17 @@ function color(i) {
 }
 
 // Create a tooltip
-function createTooltip(chart, html) {
+function createTooltip(tooltipContent) {
 
     const tooltip = d3.select("body")
         .append("div")
         .classed("tooltip", true)
-        .html(html);
+        .html(tooltipContent);
 
     return tooltip;
 }
 
+// Remove a tooltip
 function removeTooltip(tooltip) {
     tooltip.remove();
 }
