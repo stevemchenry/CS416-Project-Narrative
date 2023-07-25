@@ -4,6 +4,23 @@
 body {
     background-color: #f8f8f8;
     font-size: 15px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.chart-axis-label {
+    font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+}
+
+.chart-focus-text {
+    font-family: 'Roboto', sans-serif;
+    font-size: 35px;
+}
+
+.chart-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 25px;
+    font-weight: bold;
 }
 
 h1
@@ -95,11 +112,6 @@ nav > ul > li:not(:first-of-type) {
     text-align: center;
 }
 
-#story > p {
-    font-family: 'Roboto', sans-serif;
-    text-indent: 15px;
-}
-
 #story-container {
     background-color: #e0e0e0;
     display: flex;
@@ -110,23 +122,14 @@ nav > ul > li:not(:first-of-type) {
     padding-right: 10px;
 }
 
+.tooltip {
+    background-color: #e0e0e0;
+    border: solid 1px #aaa;
+    position: absolute;
+    padding: 3px;
+}
+
 #visualization {
     background-color: #fdfdfd;
     flex: auto;
-}
-
-.chart-axis-label {
-    font-family: 'Roboto', sans-serif;
-    font-size: 15px;
-}
-
-.chart-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 25px;
-    font-weight: bold;
-}
-
-.chart-focus-text {
-    font-family: 'Roboto', sans-serif;
-    font-size: 35px;
 }

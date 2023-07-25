@@ -36,14 +36,19 @@ function init() {
 
     // Create the chart specifications
     charts.pie = {
-        chart : null,
+        selection : null,
         height: canvasHeight,
         width: canvasWidth,
         x : (canvasWidth / 2),
         y : (canvasHeight / 2),
         innerRadius: 150,
         outerRadius: 275,
-        markSize : 50
+        markSize : 50,
+        tooltip : {
+            selection : null,
+            height: 75,
+            width: 200
+        }
     };
 
     charts.line = {
@@ -181,30 +186,22 @@ function renderScene1Canvas() {
     // Get the loaded dataset
     const dataset = datasets.popularRetailEquitiesEarly2023;
     const data = dataset.map(a => parseInt(a.RetailNetFlowMillions));
+    const retailNetFlowMillionsTotal = data.reduce((accumulator, currentValue) => (accumulator + currentValue), 0);
 
     // Clear the canvas
     document.getElementById("canvas").replaceChildren();
 
-    // Declare the chart and its attributes
-    const chart = {
-        chart : null,
-        height: canvasHeight,
-        width: canvasWidth,
-        x : (canvasWidth / 2),
-        y : (canvasHeight / 2),
-        innerRadius: 150,
-        outerRadius: 275,
-        markSize : 50
-    };
+    // Get an alias to this scene's chart
+    const chart = charts.pie;
 
     // Create the chart element and set its dimensions and position
-    chart.chart = canvas.append("g")
+    chart.selection = canvas.append("g")
         .attr("height", chart.height)
         .attr("width", chart.width)
         .attr("transform", `translate(${chart.x},${chart.y})`);
 
     // Create the chart title
-    const chartTitleGroup = chart.chart.append("g")
+    const chartTitleGroup = chart.selection.append("g")
         .attr("id", "chart-title-group");
 
     chartTitleGroup.datum("Retail Investors' Top 10 Picks for Early 2023")
@@ -221,7 +218,7 @@ function renderScene1Canvas() {
         .outerRadius(chart.outerRadius);
 
     // Create the pie chart and its entrance transition
-    const chartGraphGroup = chart.chart.append("g")
+    const chartGraphGroup = chart.selection.append("g")
         .attr("id", "chart-graph-group");
 
     chartGraphGroup.selectAll("path")
@@ -229,6 +226,24 @@ function renderScene1Canvas() {
         .enter()
         .append("path")
         .attr("fill", (d, i) => color(i))
+        .on("mouseover", (e, d) => {
+            // Remove tooltip pings if present
+            chart.selection.select("#chart-tooltip-ping-group").remove()
+            
+            // Create the tooltip
+            const title = `<div style="font-weight:bold;">${dataset[d.index].CompanyName} (${dataset[d.index].Ticker})</div>
+                <div>$${d3.format(",")(dataset[d.index].RetailNetFlowMillions)}M (${(dataset[d.index].RetailNetFlowMillions * 100 / retailNetFlowMillionsTotal).toFixed(2)}%)</div>` ;
+            chart.tooltip.selection = createTooltip(chart.selection, title, chart.tooltip.height, chart.tooltip.width)
+                .style("left", `${e.clientX}px`)
+                .style("top", `${e.clientY + 22}px`)
+        })
+        .on("mouseout", () => removeTooltip(chart.tooltip.selection))
+        .on("mousemove", e => {
+            // Move the tooltip
+            chart.tooltip.selection
+                .style("left", `${e.clientX}px`)
+                .style("top", `${e.clientY + 22}px`)
+        })
         .transition()
         .duration(chartTransitionTime)
         .attrTween("d", d => {
@@ -257,13 +272,14 @@ function renderScene1Canvas() {
         .attr("width", chart.markSize)
         .attr("height", chart.markSize)
         .attr("transform", d => `translate(${arc.centroid(d)[0] - (chart.markSize / 2)},${arc.centroid(d)[1] - (chart.markSize / 2)})`)
+        .attr("pointer-events", "none") // Don't capture mouse events; let them be captured by the object below
         .transition()
         .delay(chartTransitionTime * 0.85)
         .duration(500)
         .attr("opacity", 1.0);
 
     // Create the text value sum counter
-    chartGraphGroup.datum(data.reduce((accumulator, currentValue) => (accumulator + currentValue), 0))
+    chartGraphGroup.datum(retailNetFlowMillionsTotal)
         .append("text")
         .attr("fill", "black")
         .attr("text-anchor", "middle")
@@ -280,7 +296,7 @@ function renderScene1Canvas() {
         });
 
     // Create the tooltip ping icons
-    const chartTooltipPingGroup = chart.chart.append("g")
+    const chartTooltipPingGroup = chart.selection.append("g")
         .attr("id", "chart-tooltip-ping-group");
 
     chartTooltipPingGroup.selectAll("image")
@@ -292,6 +308,7 @@ function renderScene1Canvas() {
         .attr("width", chart.markSize)
         .attr("height", chart.markSize)
         .attr("transform", d => `translate(${(arc.centroid(d)[0] * 1.3) - (chart.markSize / 2)},${(arc.centroid(d)[1] * 1.3) - (chart.markSize / 2)})`)
+        .attr("pointer-events", "none") // Don't capture mouse events; let them be captured by the object below
         .transition()
         .delay(chartTransitionTime * 1.5)
         .duration(1000)
@@ -780,4 +797,19 @@ function chartTitleCenter(chart) {
 // Calculate a deterministic, neighbor-distinct color given a position integer
 function color(i) {
     return `hsl(${(((i * 139) + 210) % 360)}, 100%, 75%)`;
+}
+
+// Create a tooltip
+function createTooltip(chart, html) {
+
+    const tooltip = d3.select("body")
+        .append("div")
+        .classed("tooltip", true)
+        .html(html);
+
+    return tooltip;
+}
+
+function removeTooltip(tooltip) {
+    tooltip.remove();
 }
