@@ -67,7 +67,7 @@ function init() {
         },
         tooltip : {
             selection : null,
-        }
+        },
     }
 
     // Set the canvas's dimensions
@@ -229,7 +229,7 @@ function renderScene1Canvas() {
         .attr("fill", (d, i) => color(i))
         .on("mouseover", (e, d) => {
             // Remove tooltip pings if present
-            chart.selection.select("#chart-tooltip-ping-group").remove()
+            chart.selection.select("#chart-tooltip-ping-group").remove();
             
             // Create the tooltip
             const tooltipContent = `<div style="font-weight:bold;">${dataset[d.index].CompanyName} (${dataset[d.index].Ticker})</div>
@@ -355,7 +355,7 @@ function renderScene2Canvas() {
     const chartTitleGroup = chart.selection.append("g")
         .attr("id", "chart-title-group");
 
-    chartTitleGroup.datum("S&P 500 (2000-2002)")
+    chartTitleGroup.datum("S&P 500 (SPX) 2000-2002")
         .append("text")
         .text(d => d)
         .attr("class", "chart-title")
@@ -405,7 +405,7 @@ function renderScene2Canvas() {
         .attr("text-anchor", "middle")
         .attr("transform", `translate(-50,${chartAxisYCenter(chart)}) rotate(-90)`);
 
-    // Create the line
+    // Create the chart line
     const chartGraphGroup = chart.selection.append("g")
         .attr("id", "chart-graph-group");
 
@@ -423,9 +423,15 @@ function renderScene2Canvas() {
     // Create the tooltip hitbox
     const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
     const segmentWidth = graphWidth / dataDotComBurst.length;
-    const segmentWidthHalf = segmentWidth / 2
-    console.log(segmentWidth);
-    console.log(dataDotComBurst.length)
+    const segmentWidthHalf = segmentWidth / 2;
+
+    // Create the tooltip vertical rule
+    const chartTooltipVerticalRule = chart.selection.append("path")
+        .attr("pointer-events", "none")
+        .attr("fill", "none")
+        .attr("stroke", "#aaa")
+        .attr("stroke-width", "1")
+        .attr("opacity", "0.0")
 
     chartGraphGroup.append("rect")
         .attr("id", "chart-tooltip-hitbox")
@@ -436,26 +442,45 @@ function renderScene2Canvas() {
         .attr("opacity", "0.0")
         .on("mouseover", (e, d) => {
             // Remove tooltip pings if present
-            chart.selection.select("#chart-tooltip-ping-group").remove()
+            chart.selection.select("#chart-tooltip-ping-group").remove();
             
             // Create the tooltip
-            const pointer = d3.pointer(e);
-            const tooltipContent = `<div style="font-weight:bold;">Test</div>`;
+            const closestXPoint = Math.round(Math.abs(d3.pointer(e)[0] - chart.marginLeft - segmentWidthHalf) / segmentWidth);
+
+            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
+                <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
+            
             chart.tooltip.selection = createTooltip(tooltipContent)
                 .style("left", `${e.clientX}px`)
-                .style("top", `${140}px`)
+                .style("top", `${100}px`);
+
+            // Display the tooltip vertical rule
+            chartTooltipVerticalRule.attr("opacity", "1.0")
+                .attr("d", `M${d3.pointer(e)[0]},${chart.marginTop}L${d3.pointer(e)[0]},${chart.height - chart.marginTop}`)
         })
-        .on("mouseout", () => removeTooltip(chart.tooltip.selection))
+        .on("mouseout", () => {
+            // Remove the tooltip
+            removeTooltip(chart.tooltip.selection);
+            
+            // Hide the tooltip vertical rule
+            chartTooltipVerticalRule.attr("opacity", "0.0");
+        })
         .on("mousemove", e => {
-            // Move the tooltip
-            const pointer = d3.pointer(e);
-            const closestXPoint = ((pointer[0] - chart.marginLeft - segmentWidthHalf) / segmentWidth);
-            console.log(Math.round(closestXPoint));
+            // Move the tooltip and update it content
+            const closestXPoint = Math.round(Math.abs(d3.pointer(e)[0] - chart.marginLeft - segmentWidthHalf) / segmentWidth);
+
+            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
+                <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
+
             chart.tooltip.selection
-                .style("left", `${e.clientX 
-                    + (closestXPoint * (segmentWidth / 2))}px`)
-                .style("top", `${140}px`)
-        })
+                .style("left", `${e.clientX}px`)
+                .style("top", `${100}px`)
+                .node()
+                .innerHTML = tooltipContent;
+
+            // Move the tooltip vertical rule
+            chartTooltipVerticalRule.attr("d", `M${d3.pointer(e)[0]},${chart.marginTop}L${d3.pointer(e)[0]},${chart.height - chart.marginTop}`);
+        });
 
     // Create the annotations
     const annotations = chart.selection.append("g")
