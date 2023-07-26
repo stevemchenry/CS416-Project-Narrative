@@ -358,7 +358,7 @@ function renderScene2Canvas() {
     const chartTitleGroup = chart.selection.append("g")
         .attr("id", "chart-title-group");
 
-    chartTitleGroup.datum("S&P 500 (SPX) 2000-2002")
+    chartTitleGroup.datum("S&P 500 (SPX) January 2000 - September 2002")
         .append("text")
         .text(d => d)
         .attr("class", "chart-title")
@@ -412,8 +412,8 @@ function renderScene2Canvas() {
     const chartGraphGroup = chart.selection.append("g")
         .attr("id", "chart-graph-group");
 
-    const pathValueSPX = chartGraphGroup.datum(dataDotComBurst)
-        .append("path")
+    const pathValueSPX = chartGraphGroup.append("path")
+        .datum(dataDotComBurst)
         .attr("id", "chart-graph-line-spx")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
@@ -424,24 +424,27 @@ function renderScene2Canvas() {
         );
 
     // Create the tooltip hitbox
-    const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
-    const segmentWidth = graphWidth / dataDotComBurst.length;
-    const segmentWidthHalf = segmentWidth / 2;
+    const chartGraphTooltipHitbox = chart.selection.append("g")
+        .attr("id", "chart-graph-tooltip-hitbox-group");
 
-    chartGraphGroup.append("rect")
+    const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
+    const DateSegmentWidth = (graphWidth / dataDotComBurst.length);
+    const DateSegmentWidthHalf = (DateSegmentWidth / 2);
+
+    chartGraphTooltipHitbox.append("rect")
         .attr("id", "chart-tooltip-hitbox")
-        .attr("width", (chart.width - chart.marginRight - chart.marginLeft))
+        .attr("width", graphWidth)
         .attr("height", (chart.height - chart.marginBottom - chart.marginTop))
         .attr("x", chart.marginLeft)
         .attr("y", chart.marginTop)
         .attr("opacity", "0.0")
-        .on("mouseover", (e, d) => {
+        .on("mouseover", e => {
             // Remove tooltip pings if present
             chart.selection.select("#chart-tooltip-ping-group").remove();
             
             // Create the tooltip
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - segmentWidthHalf) / segmentWidth);
+            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
@@ -450,7 +453,7 @@ function renderScene2Canvas() {
                 .style("left", `${e.clientX}px`)
                 .style("top", `${100}px`);
 
-            // Create the horizontal rule
+            // Create the tooltip vertical rule
             chart.linearRule.selection = createLinearRule(chart.selection)
                 .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
         })
@@ -462,7 +465,7 @@ function renderScene2Canvas() {
         .on("mousemove", e => {
             // Move the tooltip and update it content
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - segmentWidthHalf) / segmentWidth);
+            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
@@ -479,6 +482,7 @@ function renderScene2Canvas() {
         });
 
     // Create the annotations
+    /*
     const annotations = chart.selection.append("g")
         .attr("id", "chart-annotations")
     
@@ -488,6 +492,7 @@ function renderScene2Canvas() {
         .attr("stroke-width", "1")
         .attr("stroke-dasharray", "2")
         .attr("d", `M100,200L100,350`);
+    */
         
     // Perform the chart's entrance transition
     chart.selection.transition()
@@ -538,6 +543,13 @@ function renderScene3Canvas() {
     // Create the 2000s growth period scales
     chart.phases.growthPeriod2000s.scales = {};
 
+    // Update the chart title
+    const chartTitleGroup = chart.selection.select("#chart-title-group");
+
+    chartTitleGroup.selectAll("text")
+        .datum("S&P 500 (SPX) January 2000 - July 2007")
+        .text(d => d);
+
     // Create the x scale
     chart.phases.growthPeriod2000s.scales.x = d3.scaleTime()
         .domain(d3.extent(dataSubsetThroughNow, d => dateParser(d.Date)))
@@ -557,10 +569,62 @@ function renderScene3Canvas() {
         .transition()
         .duration(chartTransitionTime)
         .ease(d3.easeCubic)
-        .call(d3.axisBottom(scaleX))
+        .call(d3.axisBottom(scaleX));
+
+    // Update the tooltip hitbox
+    const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
+    const DateSegmentWidth = (graphWidth / dataSubsetThroughNow.length);
+    const DateSegmentWidthHalf = (DateSegmentWidth / 2);
+
+    chart.selection.select("#chart-graph-tooltip-hitbox-group")
+        .selectAll("rect")
+        .on("mouseover", e => {
+            // Remove tooltip pings if present
+            chart.selection.select("#chart-tooltip-ping-group").remove();
+            
+            // Create the tooltip
+            const canvasPointerX = d3.pointer(e)[0];
+            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+
+            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
+                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
+            
+            chart.tooltip.selection = createTooltip(tooltipContent)
+                .style("left", `${e.clientX}px`)
+                .style("top", `${100}px`);
+
+            // Create the tooltip vertical rule
+            chart.linearRule.selection = createLinearRule(chart.selection)
+                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
+        })
+        .on("mouseout", () => {
+            // Remove the tooltip and vertical rule
+            removeTooltip(chart.tooltip.selection);
+            removeLinearRule(chart.linearRule.selection);
+        })
+        .on("mousemove", e => {
+            // Move the tooltip and update it content
+            const canvasPointerX = d3.pointer(e)[0];
+            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+
+            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
+                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
+
+            chart.tooltip.selection
+                .style("left", `${e.clientX}px`)
+                .style("top", `${100}px`)
+                .node()
+                .innerHTML = tooltipContent;
+
+            // Move the tooltip vertical rule
+            chart.linearRule.selection
+                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
+        });
 
     // Perform the line compression transition
-    chart.selection.select("#chart-line-spx")
+    const chartGraphGroup = chart.selection.select("#chart-graph-group");
+
+    chartGraphGroup.select("#chart-graph-line-spx")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
@@ -574,9 +638,9 @@ function renderScene3Canvas() {
         );
 
     // Create the extended line
-    const pathValueSPX = chart.selection.append("path")
+    const pathValueSPX = chartGraphGroup.append("path")
         .datum(dataGrowthPeriod2000s)
-        .attr("id", "chart-line-spx-2")
+        .attr("id", "chart-graph-line-spx-2")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", "1.5px")
@@ -596,18 +660,6 @@ function renderScene3Canvas() {
         .ease(d3.easeQuadOut)
         .attr("stroke-dashoffset", 0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Load scene 4
 function loadScene4() {
@@ -641,6 +693,13 @@ function renderScene4Canvas() {
     // Create the great recession scales
     chart.phases.greatRecession.scales = {};
 
+    // Update the chart title
+    const chartTitleGroup = chart.selection.select("#chart-title-group");
+
+    chartTitleGroup.selectAll("text")
+        .datum("S&P 500 (SPX) January 2000 - February 2009")
+        .text(d => d);
+
     // Create the x scale
     chart.phases.greatRecession.scales.x = d3.scaleTime()
         .domain(d3.extent(dataSubsetThroughNow, d => dateParser(d.Date)))
@@ -662,9 +721,61 @@ function renderScene4Canvas() {
         .ease(d3.easeCubic)
         .call(d3.axisBottom(scaleX));
 
+    // Update the tooltip hitbox
+    const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
+    const DateSegmentWidth = (graphWidth / dataSubsetThroughNow.length);
+    const DateSegmentWidthHalf = (DateSegmentWidth / 2);
+
+    chart.selection.select("#chart-graph-tooltip-hitbox-group")
+        .selectAll("rect")
+        .on("mouseover", e => {
+            // Remove tooltip pings if present
+            chart.selection.select("#chart-tooltip-ping-group").remove();
+            
+            // Create the tooltip
+            const canvasPointerX = d3.pointer(e)[0];
+            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+
+            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
+                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
+            
+            chart.tooltip.selection = createTooltip(tooltipContent)
+                .style("left", `${e.clientX}px`)
+                .style("top", `${100}px`);
+
+            // Create the tooltip vertical rule
+            chart.linearRule.selection = createLinearRule(chart.selection)
+                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
+        })
+        .on("mouseout", () => {
+            // Remove the tooltip and vertical rule
+            removeTooltip(chart.tooltip.selection);
+            removeLinearRule(chart.linearRule.selection);
+        })
+        .on("mousemove", e => {
+            // Move the tooltip and update it content
+            const canvasPointerX = d3.pointer(e)[0];
+            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+
+            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
+                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
+
+            chart.tooltip.selection
+                .style("left", `${e.clientX}px`)
+                .style("top", `${100}px`)
+                .node()
+                .innerHTML = tooltipContent;
+
+            // Move the tooltip vertical rule
+            chart.linearRule.selection
+                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
+        });
+
     // Perform the line compression transition
-    chart.selection.select("#chart-line-spx")
-        // If the previous slide was still performing a line transition, interrupt it and snap-complete it
+    const chartGraphGroup = chart.selection.select("#chart-graph-group");
+
+    chartGraphGroup.select("#chart-graph-line-spx")
+        // If the previous slide was still performing a line transition, interrupt it and snap-complete it  
         .interrupt()
         .attr("stroke-dashoffset", 0)
         .attr("d", d3.line()
@@ -679,8 +790,8 @@ function renderScene4Canvas() {
             .x((d, i) => scaleX(dateParser(dataDotComBurst[i].Date)))
             .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
         );
-
-    chart.selection.select("#chart-line-spx-2")
+        
+    chartGraphGroup.select("#chart-graph-line-spx-2")
         // If the previous slide was still performing a line transition, interrupt it and snap-complete it
         .interrupt()
         .attr("stroke-dashoffset", 0)
@@ -694,9 +805,9 @@ function renderScene4Canvas() {
         );
 
     // Create the extended line
-    const pathValueSPX = chart.selection.append("path")
+    const pathValueSPX = chartGraphGroup.append("path")
         .datum(dataGreatRecession)
-        .attr("id", "chart-line-spx-3")
+        .attr("id", "chart-graph-line-spx-3")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", "1.5px")
@@ -716,14 +827,6 @@ function renderScene4Canvas() {
         .ease(d3.easeQuadOut)
         .attr("stroke-dashoffset", 0);
 }
-
-
-
-
-
-
-
-
 
 // Load scene 5
 function loadScene5() {
