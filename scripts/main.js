@@ -45,7 +45,7 @@ function init() {
         outerRadius: 275,
         markSize : 50,
         tooltip : {
-            selection : null,
+            selection : null
         }
     };
 
@@ -66,8 +66,11 @@ function init() {
             postGreatRecession : {}
         },
         tooltip : {
-            selection : null,
+            selection : null
         },
+        linearRule : {
+            selection : null
+        }
     }
 
     // Set the canvas's dimensions
@@ -425,14 +428,6 @@ function renderScene2Canvas() {
     const segmentWidth = graphWidth / dataDotComBurst.length;
     const segmentWidthHalf = segmentWidth / 2;
 
-    // Create the tooltip vertical rule
-    const chartTooltipVerticalRule = chart.selection.append("path")
-        .attr("pointer-events", "none")
-        .attr("fill", "none")
-        .attr("stroke", "#aaa")
-        .attr("stroke-width", "1")
-        .attr("opacity", "0.0")
-
     chartGraphGroup.append("rect")
         .attr("id", "chart-tooltip-hitbox")
         .attr("width", (chart.width - chart.marginRight - chart.marginLeft))
@@ -445,7 +440,8 @@ function renderScene2Canvas() {
             chart.selection.select("#chart-tooltip-ping-group").remove();
             
             // Create the tooltip
-            const closestXPoint = Math.round(Math.abs(d3.pointer(e)[0] - chart.marginLeft - segmentWidthHalf) / segmentWidth);
+            const canvasPointerX = d3.pointer(e)[0];
+            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - segmentWidthHalf) / segmentWidth);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
@@ -454,20 +450,19 @@ function renderScene2Canvas() {
                 .style("left", `${e.clientX}px`)
                 .style("top", `${100}px`);
 
-            // Display the tooltip vertical rule
-            chartTooltipVerticalRule.attr("opacity", "1.0")
-                .attr("d", `M${d3.pointer(e)[0]},${chart.marginTop}L${d3.pointer(e)[0]},${chart.height - chart.marginTop}`)
+            // Create the horizontal rule
+            chart.linearRule.selection = createLinearRule(chart.selection)
+                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
         })
         .on("mouseout", () => {
-            // Remove the tooltip
+            // Remove the tooltip and vertical rule
             removeTooltip(chart.tooltip.selection);
-            
-            // Hide the tooltip vertical rule
-            chartTooltipVerticalRule.attr("opacity", "0.0");
+            removeLinearRule(chart.linearRule.selection);
         })
         .on("mousemove", e => {
             // Move the tooltip and update it content
-            const closestXPoint = Math.round(Math.abs(d3.pointer(e)[0] - chart.marginLeft - segmentWidthHalf) / segmentWidth);
+            const canvasPointerX = d3.pointer(e)[0];
+            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - segmentWidthHalf) / segmentWidth);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
@@ -479,7 +474,8 @@ function renderScene2Canvas() {
                 .innerHTML = tooltipContent;
 
             // Move the tooltip vertical rule
-            chartTooltipVerticalRule.attr("d", `M${d3.pointer(e)[0]},${chart.marginTop}L${d3.pointer(e)[0]},${chart.height - chart.marginTop}`);
+            chart.linearRule.selection
+                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
         });
 
     // Create the annotations
@@ -491,10 +487,8 @@ function renderScene2Canvas() {
         .attr("stroke", "#444")
         .attr("stroke-width", "1")
         .attr("stroke-dasharray", "2")
-        .attr("d", `M100,200L100,350`)
+        .attr("d", `M100,200L100,350`);
         
-
-
     // Perform the chart's entrance transition
     chart.selection.transition()
         .duration(sceneTransitionTime)
@@ -883,16 +877,27 @@ function color(i) {
 
 // Create a tooltip
 function createTooltip(tooltipContent) {
-
-    const tooltip = d3.select("body")
+    return d3.select("body")
         .append("div")
         .classed("tooltip", true)
         .html(tooltipContent);
-
-    return tooltip;
 }
 
 // Remove a tooltip
 function removeTooltip(tooltip) {
     tooltip.remove();
+}
+
+// Create a linear rule
+function createLinearRule(chartSelection) {
+    return chartSelection.append("path")
+        .attr("pointer-events", "none")
+        .attr("fill", "none")
+        .attr("stroke", "#aaa")
+        .attr("stroke-width", "1");
+}
+
+// Remove a linear rule
+function removeLinearRule(rule) {
+    rule.remove();
 }
