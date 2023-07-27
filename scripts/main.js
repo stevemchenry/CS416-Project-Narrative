@@ -14,6 +14,7 @@ const canvasWidth = 1000;
 const canvasHeight = 800;
 const sceneTransitionTime = 500;
 const chartTransitionTime = 2000;
+const pathEntranceTransitionTime = chartTransitionTime * 2;
 const dateParser = d3.utcParse("%Y-%m-%d");
 
 // Execute the narrative visualization
@@ -408,20 +409,16 @@ function renderScene2Canvas() {
         .attr("text-anchor", "middle")
         .attr("transform", `translate(-50,${chartAxisYCenter(chart)}) rotate(-90)`);
 
-    // Create the chart line
+    // Create the chart graph group
     const chartGraphGroup = chart.selection.append("g")
         .attr("id", "chart-graph-group");
 
-    const pathValueSPX = chartGraphGroup.append("path")
-        .datum(dataDotComBurst)
-        .attr("id", "chart-graph-line-spx")
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", "1.5px")
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataDotComBurst[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
-        );
+    // Create the first SPX path segment
+    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx", dataDotComBurst, chart.phases.dotComBurst.scales, "steelblue");
+
+    const pathValueLengthSPX = pathValueSPX.node().getTotalLength();
+    pathValueSPX.attr("stroke-dashoffset", pathValueLengthSPX)
+        .attr("stroke-dasharray", pathValueLengthSPX);
 
     // Create the tooltip hitbox
     const chartGraphTooltipHitbox = chart.selection.append("g")
@@ -500,16 +497,8 @@ function renderScene2Canvas() {
         .ease(d3.easeLinear)
         .attr("opacity", "1.0");
 
-    // Perform the line's entrance transition
-    const pathValueSPXLength = pathValueSPX.node().getTotalLength();
-
-    pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
-        .attr("stroke-dasharray", pathValueSPXLength)
-        .transition()
-        .delay(sceneTransitionTime)
-        .duration(chartTransitionTime * 2)
-        .ease(d3.easeQuadOut)
-        .attr("stroke-dashoffset", 0);
+    // Perform the new path's entrance transition
+    performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, sceneTransitionTime);
 }
 
 // Load scene 3
@@ -564,12 +553,8 @@ function renderScene3Canvas() {
 
     const scaleY = chart.phases.growthPeriod2000s.scales.y;
 
-    // Re-scale the x axis
-    chart.selection.select("#chart-axis-x")
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .call(d3.axisBottom(scaleX));
+    // Rescale the x axis
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, scaleX, chartTransitionTime);
 
     // Update the tooltip hitbox
     const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
@@ -624,41 +609,21 @@ function renderScene3Canvas() {
     // Perform the line compression transition
     const chartGraphGroup = chart.selection.select("#chart-graph-group");
 
-    chartGraphGroup.select("#chart-graph-line-spx")
-        // If the previous slide was still performing a line transition, interrupt it and snap-complete it
-        .interrupt()
-        .attr("stroke-dashoffset", 0)
-        // Perform the line compression transition
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataDotComBurst[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
-        );
+    performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx"),
+        dataDotComBurst,
+        chart.phases.dotComBurst.scales,
+        chart.phases.growthPeriod2000s.scales,
+        chartTransitionTime);
 
-    // Create the extended line
-    const pathValueSPX = chartGraphGroup.append("path")
-        .datum(dataGrowthPeriod2000s)
-        .attr("id", "chart-graph-line-spx-2")
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", "1.5px")
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataGrowthPeriod2000s[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataGrowthPeriod2000s[i].Close)))
-        );
+    // Create the extended path
+    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-2", dataGrowthPeriod2000s, chart.phases.growthPeriod2000s.scales, "steelblue");
 
-    // Perform the extended line's entrance transition
     const pathValueSPXLength = pathValueSPX.node().getTotalLength();
-
     pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
-        .attr("stroke-dasharray", pathValueSPXLength)
-        .transition()
-        .delay(chartTransitionTime)
-        .duration(chartTransitionTime * 2)
-        .ease(d3.easeQuadOut)
-        .attr("stroke-dashoffset", 0);
+        .attr("stroke-dasharray", pathValueSPXLength);
+    
+    // Perform the extended line's entrance transition
+    performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, chartTransitionTime);
 }
 
 // Load scene 4
@@ -714,12 +679,8 @@ function renderScene4Canvas() {
 
     const scaleY = chart.phases.greatRecession.scales.y;
 
-    // Re-scale the x axis
-    chart.selection.select("#chart-axis-x")
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .call(d3.axisBottom(scaleX));
+    // Rescale the x axis
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, scaleX, chartTransitionTime);
 
     // Update the tooltip hitbox
     const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
@@ -774,58 +735,27 @@ function renderScene4Canvas() {
     // Perform the line compression transition
     const chartGraphGroup = chart.selection.select("#chart-graph-group");
 
-    chartGraphGroup.select("#chart-graph-line-spx")
-        // If the previous slide was still performing a line transition, interrupt it and snap-complete it  
-        .interrupt()
-        .attr("stroke-dashoffset", 0)
-        .attr("d", d3.line()
-            .x((d, i) => chart.phases.growthPeriod2000s.scales.x(dateParser(dataDotComBurst[i].Date)))
-            .y((d, i) => chart.phases.growthPeriod2000s.scales.y(parseFloat(dataDotComBurst[i].Close)))
-        )
-        // Perform the line compression transition
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataDotComBurst[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
-        );
-        
-    chartGraphGroup.select("#chart-graph-line-spx-2")
-        // If the previous slide was still performing a line transition, interrupt it and snap-complete it
-        .interrupt()
-        .attr("stroke-dashoffset", 0)
-        // Perform the line compression transition
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataGrowthPeriod2000s[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataGrowthPeriod2000s[i].Close)))
-        );
+    performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx"),
+    dataDotComBurst,
+    chart.phases.growthPeriod2000s.scales,
+    chart.phases.greatRecession.scales,
+    chartTransitionTime);
 
-    // Create the extended line
-    const pathValueSPX = chartGraphGroup.append("path")
-        .datum(dataGreatRecession)
-        .attr("id", "chart-graph-line-spx-3")
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", "1.5px")
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataGreatRecession[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataGreatRecession[i].Close)))
-        );
+    performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx-2"),
+    dataGrowthPeriod2000s,
+    chart.phases.growthPeriod2000s.scales,
+    chart.phases.greatRecession.scales,
+    chartTransitionTime);
 
-    // Perform the extended line's entrance transition
+    // Create the extended path
+    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-3", dataGreatRecession, chart.phases.greatRecession.scales, "steelblue");
+
     const pathValueSPXLength = pathValueSPX.node().getTotalLength();
-
     pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
-        .attr("stroke-dasharray", pathValueSPXLength)
-        .transition()
-        .delay(chartTransitionTime)
-        .duration(chartTransitionTime * 2)
-        .ease(d3.easeQuadOut)
-        .attr("stroke-dashoffset", 0);
+        .attr("stroke-dasharray", pathValueSPXLength);
+    
+    // Perform the extended line's entrance transition
+    performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, chartTransitionTime);
 }
 
 // Load scene 5
@@ -880,19 +810,9 @@ function renderScene5Canvas() {
 
     const scaleY = chart.phases.postGreatRecession.scales.y;
 
-    // Re-scale the x axis
-    chart.selection.select("#chart-axis-x")
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .call(d3.axisBottom(scaleX));
-
-    // Re-scale the y axis
-    chart.selection.select("#chart-axis-y")
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .call(d3.axisLeft(scaleY));
+    // Rescale the x and y axes
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, scaleX, chartTransitionTime);
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, scaleY, chartTransitionTime);
 
     // Update the tooltip hitbox
     const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
@@ -947,75 +867,33 @@ function renderScene5Canvas() {
     // Perform the line compression transition
     const chartGraphGroup = chart.selection.select("#chart-graph-group");
 
-    chartGraphGroup.select("#chart-graph-line-spx")
-        // If the previous slide was still performing a line transition, interrupt it and snap-complete it
-        .interrupt()
-        .attr("stroke-dashoffset", 0)
-        .attr("d", d3.line()
-            .x((d, i) => chart.phases.greatRecession.scales.x(dateParser(dataDotComBurst[i].Date)))
-            .y((d, i) => chart.phases.greatRecession.scales.y(parseFloat(dataDotComBurst[i].Close)))
-        )
-        // Perform the line compression transition
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataDotComBurst[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataDotComBurst[i].Close)))
-        );
+    performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx"),
+    dataDotComBurst,
+    chart.phases.greatRecession.scales,
+    chart.phases.postGreatRecession.scales,
+    chartTransitionTime);
 
-        chartGraphGroup.select("#chart-graph-line-spx-2")
-        // If the previous slide was still performing a line transition, interrupt it and snap-complete it
-        .interrupt()
-        .attr("stroke-dashoffset", 0)
-        .attr("d", d3.line()
-            .x((d, i) => chart.phases.greatRecession.scales.x(dateParser(dataGrowthPeriod2000s[i].Date)))
-            .y((d, i) => chart.phases.greatRecession.scales.y(parseFloat(dataGrowthPeriod2000s[i].Close)))
-        )
-        // Perform the line compression transition
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataGrowthPeriod2000s[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataGrowthPeriod2000s[i].Close)))
-        );
+    performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx-2"),
+    dataGrowthPeriod2000s,
+    chart.phases.greatRecession.scales,
+    chart.phases.postGreatRecession.scales,
+    chartTransitionTime);
 
-        chartGraphGroup.select("#chart-graph-line-spx-3")
-        // If the previous slide was still performing a line transition, interrupt it and snap-complete it
-        .interrupt()
-        .attr("stroke-dashoffset", 0)
-        // Perform the line compression transition
-        .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataGreatRecession[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataGreatRecession[i].Close)))
-        );
+    performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx-3"),
+    dataGreatRecession,
+    chart.phases.greatRecession.scales,
+    chart.phases.postGreatRecession.scales,
+    chartTransitionTime);
 
-    // Create the extended line
-    const pathValueSPX = chartGraphGroup.append("path")
-        .datum(dataPostGreatRecession)
-        .attr("id", "chart-line-spx-4")
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", "1.5px")
-        .attr("d", d3.line()
-            .x((d, i) => scaleX(dateParser(dataPostGreatRecession[i].Date)))
-            .y((d, i) => scaleY(parseFloat(dataPostGreatRecession[i].Close)))
-        );
+    // Create the extended path
+    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-4", dataPostGreatRecession, chart.phases.postGreatRecession.scales, "steelblue");
+
+    const pathValueSPXLength = pathValueSPX.node().getTotalLength();
+    pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
+        .attr("stroke-dasharray", pathValueSPXLength);
 
     // Perform the extended line's entrance transition
-    const pathValueSPXLength = pathValueSPX.node().getTotalLength();
-
-    pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
-        .attr("stroke-dasharray", pathValueSPXLength)
-        .transition()
-        .delay(chartTransitionTime)
-        .duration(chartTransitionTime * 2)
-        .ease(d3.easeQuadOut)
-        .attr("stroke-dashoffset", 0);
+    performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, chartTransitionTime);
 }
 
 // Calculate the center point of a chart's x axis
@@ -1063,4 +941,59 @@ function createLinearRule(chartSelection) {
 // Remove a linear rule
 function removeLinearRule(rule) {
     rule.remove();
+}
+
+// Perform an animated path entrance transition
+function performPathEntranceTransition(pathSelection, durationTime, delayTime) {
+    return pathSelection
+        .transition()
+        .delay(delayTime)
+        .duration(durationTime)
+        .ease(d3.easeQuadOut)
+        .attr("stroke-dashoffset", 0);
+}
+
+// Perform an animated path rescaling
+function performPathRescalingTransition(pathSelection, dataset, scalesBegin, scalesEnd, durationTime) {
+    return pathSelection
+    // If the previous slide was still performing a line transition, interrupt it and snap-complete it  
+    .interrupt()
+    .attr("stroke-dashoffset", 0)
+    .attr("d", d3.line()
+        .x((d, i) => scalesBegin.x(dateParser(dataset[i].Date)))
+        .y((d, i) => scalesBegin.y(parseFloat(dataset[i].Close)))
+    )
+    // Perform the line compression transition
+    .transition()
+    .duration(durationTime)
+    .ease(d3.easeCubic)
+    .attr("d", d3.line()
+        .x((d, i) => scalesEnd.x(dateParser(dataset[i].Date)))
+        .y((d, i) => scalesEnd.y(parseFloat(dataset[i].Close)))
+    );
+}
+
+// Perform an animated axis rescaling
+function performAxisRescalingTransition(axisSelection, axisOrientation, scaleNew, durationTime)
+{
+    return axisSelection
+        .transition()
+        .duration(durationTime)
+        .ease(d3.easeCubic)
+        .call(axisOrientation(scaleNew));
+}
+
+// Create a path
+function createPath(containerSelection, id, dataset, scales, color)
+{
+    return containerSelection.append("path")
+    .datum(dataset)
+    .attr("id", id)
+    .attr("fill", "none")
+    .attr("stroke", color)
+    .attr("stroke-width", "1.5px")
+    .attr("d", d3.line()
+        .x((d, i) => scales.x(dateParser(dataset[i].Date)))
+        .y((d, i) => scales.y(parseFloat(dataset[i].Close)))
+    );
 }
