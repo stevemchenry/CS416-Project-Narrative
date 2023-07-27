@@ -378,7 +378,7 @@ function renderScene2Canvas() {
     chart.phases.dotComBurst.scales.y = d3.scaleLinear()
         .domain([600, 1600])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
-        
+
     // Create the x axis
     chart.selection.append("g")
         .attr("id", "chart-axis-x")
@@ -420,59 +420,20 @@ function renderScene2Canvas() {
     const chartGraphTooltipHitbox = chart.selection.append("g")
         .attr("id", "chart-graph-tooltip-hitbox-group");
 
-    const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
-    const DateSegmentWidth = (graphWidth / dataDotComBurst.length);
-    const DateSegmentWidthHalf = (DateSegmentWidth / 2);
-
     chartGraphTooltipHitbox.append("rect")
         .attr("id", "chart-tooltip-hitbox")
-        .attr("width", graphWidth)
+        .attr("width", (chart.width - chart.marginRight - chart.marginLeft))
         .attr("height", (chart.height - chart.marginBottom - chart.marginTop))
         .attr("x", chart.marginLeft)
         .attr("y", chart.marginTop)
         .attr("opacity", "0.0")
-        .on("mouseover", e => {
-            // Remove tooltip pings if present
-            chart.selection.select("#chart-tooltip-ping-group").remove();
-            
-            // Create the tooltip
-            const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataDotComBurst.length - 1)), 0);
-
-            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
-                <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
-            
-            chart.tooltip.selection = createTooltip(tooltipContent)
-                .style("left", `${e.clientX}px`)
-                .style("top", `${100}px`);
-
-            // Create the tooltip vertical rule
-            chart.linearRule.selection = createLinearRule(chart.selection)
-                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
-        })
+        .on("mouseover", e => createStockChartSPXTooltip(e, chart, dataDotComBurst))
         .on("mouseout", () => {
             // Remove the tooltip and vertical rule
             removeTooltip(chart.tooltip.selection);
             removeLinearRule(chart.linearRule.selection);
         })
-        .on("mousemove", e => {
-            // Move the tooltip and update it content
-            const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataDotComBurst.length - 1)), 0);
-
-            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
-                <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
-
-            chart.tooltip.selection
-                .style("left", `${e.clientX}px`)
-                .style("top", `${100}px`)
-                .node()
-                .innerHTML = tooltipContent;
-
-            // Move the tooltip vertical rule
-            chart.linearRule.selection
-                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
-        });
+        .on("mousemove", e => moveStockChartSPXTooltip(e, chart, dataDotComBurst));
 
     // Create the annotations
     /*
@@ -520,10 +481,7 @@ function renderScene3Canvas() {
     // Create the dataset subset
     chart.phases.growthPeriod2000s.dateEnd = new Date("2007-07-07");
     chart.phases.growthPeriod2000s.dataSubset = datasets.spxHistorical.filter(d => ((dateParser(d.Date) >= chart.phases.dotComBurst.dateEnd) && (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd)));
-    const dataSubsetThroughNow = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd));
-
-    const dataDotComBurst = chart.phases.dotComBurst.dataSubset;
-    const dataGrowthPeriod2000s = chart.phases.growthPeriod2000s.dataSubset;
+    const dataSubsetCurrentRange = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd));
 
     // Create the 2000s growth period scales
     chart.phases.growthPeriod2000s.scales = {};
@@ -537,7 +495,7 @@ function renderScene3Canvas() {
 
     // Create the x scale
     chart.phases.growthPeriod2000s.scales.x = d3.scaleTime()
-        .domain(d3.extent(dataSubsetThroughNow, d => dateParser(d.Date)))
+        .domain(d3.extent(dataSubsetCurrentRange, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
     // Create the y scale (this should be the same as the previous phase)
@@ -546,67 +504,28 @@ function renderScene3Canvas() {
     // Rescale the x axis
     performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.growthPeriod2000s.scales.x, chartTransitionTime);
 
-    // Update the tooltip hitbox
-    const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
-    const DateSegmentWidth = (graphWidth / dataSubsetThroughNow.length);
-    const DateSegmentWidthHalf = (DateSegmentWidth / 2);
-
+    // Update the tooltip parameters
     chart.selection.select("#chart-graph-tooltip-hitbox-group")
         .selectAll("rect")
-        .on("mouseover", e => {
-            // Remove tooltip pings if present
-            chart.selection.select("#chart-tooltip-ping-group").remove();
-            
-            // Create the tooltip
-            const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
-
-            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
-                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
-            
-            chart.tooltip.selection = createTooltip(tooltipContent)
-                .style("left", `${e.clientX}px`)
-                .style("top", `${100}px`);
-
-            // Create the tooltip vertical rule
-            chart.linearRule.selection = createLinearRule(chart.selection)
-                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
-        })
+        .on("mouseover", e => createStockChartSPXTooltip(e, chart, dataSubsetCurrentRange))
         .on("mouseout", () => {
             // Remove the tooltip and vertical rule
             removeTooltip(chart.tooltip.selection);
             removeLinearRule(chart.linearRule.selection);
         })
-        .on("mousemove", e => {
-            // Move the tooltip and update it content
-            const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
-
-            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
-                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
-
-            chart.tooltip.selection
-                .style("left", `${e.clientX}px`)
-                .style("top", `${100}px`)
-                .node()
-                .innerHTML = tooltipContent;
-
-            // Move the tooltip vertical rule
-            chart.linearRule.selection
-                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
-        });
+        .on("mousemove", e => moveStockChartSPXTooltip(e, chart, dataSubsetCurrentRange));
 
     // Perform the line compression transition
     const chartGraphGroup = chart.selection.select("#chart-graph-group");
 
     performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx"),
-        dataDotComBurst,
+        chart.phases.dotComBurst.dataSubset,
         chart.phases.dotComBurst.scales,
         chart.phases.growthPeriod2000s.scales,
         chartTransitionTime);
 
     // Create the extended path
-    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-2", dataGrowthPeriod2000s, chart.phases.growthPeriod2000s.scales, "steelblue");
+    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-2", chart.phases.growthPeriod2000s.dataSubset, chart.phases.growthPeriod2000s.scales, "steelblue");
 
     const pathValueSPXLength = pathValueSPX.node().getTotalLength();
     pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
@@ -639,11 +558,7 @@ function renderScene4Canvas() {
     // Create the dataset subset
     chart.phases.greatRecession.dateEnd = new Date("2009-02-28");
     chart.phases.greatRecession.dataSubset = datasets.spxHistorical.filter(d => ((dateParser(d.Date) >= chart.phases.growthPeriod2000s.dateEnd) && (dateParser(d.Date) <= chart.phases.greatRecession.dateEnd)));
-    const dataSubsetThroughNow = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.greatRecession.dateEnd));
-
-    const dataDotComBurst = chart.phases.dotComBurst.dataSubset;
-    const dataGrowthPeriod2000s = chart.phases.growthPeriod2000s.dataSubset;
-    const dataGreatRecession = chart.phases.greatRecession.dataSubset;
+    const dataSubsetCurrentRange = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.greatRecession.dateEnd));
 
     // Create the great recession scales
     chart.phases.greatRecession.scales = {};
@@ -657,7 +572,7 @@ function renderScene4Canvas() {
 
     // Create the x scale
     chart.phases.greatRecession.scales.x = d3.scaleTime()
-        .domain(d3.extent(dataSubsetThroughNow, d => dateParser(d.Date)))
+        .domain(d3.extent(dataSubsetCurrentRange, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
     // Create the y scale (this should be the same as the previous two phases)
@@ -667,72 +582,33 @@ function renderScene4Canvas() {
     performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.greatRecession.scales.x, chartTransitionTime);
 
     // Update the tooltip hitbox
-    const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
-    const DateSegmentWidth = (graphWidth / dataSubsetThroughNow.length);
-    const DateSegmentWidthHalf = (DateSegmentWidth / 2);
-
     chart.selection.select("#chart-graph-tooltip-hitbox-group")
         .selectAll("rect")
-        .on("mouseover", e => {
-            // Remove tooltip pings if present
-            chart.selection.select("#chart-tooltip-ping-group").remove();
-            
-            // Create the tooltip
-            const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
-
-            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
-                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
-            
-            chart.tooltip.selection = createTooltip(tooltipContent)
-                .style("left", `${e.clientX}px`)
-                .style("top", `${100}px`);
-
-            // Create the tooltip vertical rule
-            chart.linearRule.selection = createLinearRule(chart.selection)
-                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
-        })
+        .on("mouseover", e => createStockChartSPXTooltip(e, chart, dataSubsetCurrentRange))
         .on("mouseout", () => {
             // Remove the tooltip and vertical rule
             removeTooltip(chart.tooltip.selection);
             removeLinearRule(chart.linearRule.selection);
         })
-        .on("mousemove", e => {
-            // Move the tooltip and update it content
-            const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
-
-            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
-                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
-
-            chart.tooltip.selection
-                .style("left", `${e.clientX}px`)
-                .style("top", `${100}px`)
-                .node()
-                .innerHTML = tooltipContent;
-
-            // Move the tooltip vertical rule
-            chart.linearRule.selection
-                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
-        });
+        .on("mousemove", e => moveStockChartSPXTooltip(e, chart, dataSubsetCurrentRange));
 
     // Perform the line compression transition
     const chartGraphGroup = chart.selection.select("#chart-graph-group");
 
     performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx"),
-    dataDotComBurst,
-    chart.phases.growthPeriod2000s.scales,
-    chart.phases.greatRecession.scales,
-    chartTransitionTime);
+        chart.phases.dotComBurst.dataSubset,
+        chart.phases.growthPeriod2000s.scales,
+        chart.phases.greatRecession.scales,
+        chartTransitionTime);
 
     performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx-2"),
-    dataGrowthPeriod2000s,
-    chart.phases.growthPeriod2000s.scales,
-    chart.phases.greatRecession.scales,
-    chartTransitionTime);
+        chart.phases.growthPeriod2000s.dataSubset,
+        chart.phases.growthPeriod2000s.scales,
+        chart.phases.greatRecession.scales,
+        chartTransitionTime);
 
     // Create the extended path
-    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-3", dataGreatRecession, chart.phases.greatRecession.scales, "steelblue");
+    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-3", chart.phases.greatRecession.dataSubset, chart.phases.greatRecession.scales, "steelblue");
 
     const pathValueSPXLength = pathValueSPX.node().getTotalLength();
     pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
@@ -764,11 +640,6 @@ function renderScene5Canvas() {
 
     // Create the dataset subset
     const dataPostGreatRecession = datasets.spxHistorical.filter(d => (dateParser(d.Date) >= chart.phases.greatRecession.dateEnd));
-    const dataSubsetThroughNow = datasets.spxHistorical;
-
-    const dataDotComBurst = chart.phases.dotComBurst.dataSubset;
-    const dataGrowthPeriod2000s = chart.phases.growthPeriod2000s.dataSubset;
-    const dataGreatRecession = chart.phases.greatRecession.dataSubset;
 
     // Create the great recession scales
     chart.phases.postGreatRecession.scales = {};
@@ -795,75 +666,36 @@ function renderScene5Canvas() {
     performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.postGreatRecession.scales.y, chartTransitionTime);
 
     // Update the tooltip hitbox
-    const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
-    const DateSegmentWidth = (graphWidth / dataSubsetThroughNow.length);
-    const DateSegmentWidthHalf = (DateSegmentWidth / 2);
-
     chart.selection.select("#chart-graph-tooltip-hitbox-group")
         .selectAll("rect")
-        .on("mouseover", e => {
-            // Remove tooltip pings if present
-            chart.selection.select("#chart-tooltip-ping-group").remove();
-            
-            // Create the tooltip
-            const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
-
-            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
-                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
-            
-            chart.tooltip.selection = createTooltip(tooltipContent)
-                .style("left", `${e.clientX}px`)
-                .style("top", `${100}px`);
-
-            // Create the tooltip vertical rule
-            chart.linearRule.selection = createLinearRule(chart.selection)
-                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
-        })
+        .on("mouseover", e => createStockChartSPXTooltip(e, chart, datasets.spxHistorical))
         .on("mouseout", () => {
             // Remove the tooltip and vertical rule
             removeTooltip(chart.tooltip.selection);
             removeLinearRule(chart.linearRule.selection);
         })
-        .on("mousemove", e => {
-            // Move the tooltip and update it content
-            const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
-
-            const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
-                <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
-
-            chart.tooltip.selection
-                .style("left", `${e.clientX}px`)
-                .style("top", `${100}px`)
-                .node()
-                .innerHTML = tooltipContent;
-
-            // Move the tooltip vertical rule
-            chart.linearRule.selection
-                .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
-        });    
+        .on("mousemove", e => moveStockChartSPXTooltip(e, chart, datasets.spxHistorical));    
 
     // Perform the line compression transition
     const chartGraphGroup = chart.selection.select("#chart-graph-group");
 
     performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx"),
-    dataDotComBurst,
-    chart.phases.greatRecession.scales,
-    chart.phases.postGreatRecession.scales,
-    chartTransitionTime);
+        chart.phases.dotComBurst.dataSubset,
+        chart.phases.greatRecession.scales,
+        chart.phases.postGreatRecession.scales,
+        chartTransitionTime);
 
     performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx-2"),
-    dataGrowthPeriod2000s,
-    chart.phases.greatRecession.scales,
-    chart.phases.postGreatRecession.scales,
-    chartTransitionTime);
+        chart.phases.growthPeriod2000s.dataSubset,
+        chart.phases.greatRecession.scales,
+        chart.phases.postGreatRecession.scales,
+        chartTransitionTime);
 
     performPathRescalingTransition(chartGraphGroup.select("#chart-graph-line-spx-3"),
-    dataGreatRecession,
-    chart.phases.greatRecession.scales,
-    chart.phases.postGreatRecession.scales,
-    chartTransitionTime);
+        chart.phases.greatRecession.dataSubset,
+        chart.phases.greatRecession.scales,
+        chart.phases.postGreatRecession.scales,
+        chartTransitionTime);
 
     // Create the extended path
     const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-4", dataPostGreatRecession, chart.phases.postGreatRecession.scales, "steelblue");
@@ -954,8 +786,7 @@ function performPathRescalingTransition(pathSelection, dataset, scalesBegin, sca
 }
 
 // Perform an animated axis rescaling
-function performAxisRescalingTransition(axisSelection, axisOrientation, scaleNew, durationTime)
-{
+function performAxisRescalingTransition(axisSelection, axisOrientation, scaleNew, durationTime) {
     return axisSelection
         .transition()
         .duration(durationTime)
@@ -964,8 +795,7 @@ function performAxisRescalingTransition(axisSelection, axisOrientation, scaleNew
 }
 
 // Create a path
-function createPath(containerSelection, id, dataset, scales, color)
-{
+function createPath(containerSelection, id, dataset, scales, color) {
     return containerSelection.append("path")
     .datum(dataset)
     .attr("id", id)
@@ -976,4 +806,44 @@ function createPath(containerSelection, id, dataset, scales, color)
         .x((d, i) => scales.x(dateParser(dataset[i].Date)))
         .y((d, i) => scales.y(parseFloat(dataset[i].Close)))
     );
+}
+
+// Create the SPX stock chart tooltip
+function createStockChartSPXTooltip(e, chart, dataset) {
+    // Create the tooltip box
+    const DateSegmentWidth = ((chart.width - chart.marginRight - chart.marginLeft) / dataset.length);
+    const canvasPointerX = d3.pointer(e)[0];
+    const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - (DateSegmentWidth / 2)) / DateSegmentWidth), (dataset.length - 1)), 0);
+
+    const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataset[closestXPoint].Date}</div>
+        <div><span style="font-weight:bold; color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",")(dataset[closestXPoint].Close)}</div>`;
+    
+    chart.tooltip.selection = createTooltip(tooltipContent)
+        .style("left", `${e.clientX}px`)
+        .style("top", `${100}px`);
+
+    // Create the tooltip vertical rule
+    chart.linearRule.selection = createLinearRule(chart.selection)
+        .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
+}
+
+// Move the SPX stock chart tooltip to the cursor location
+function moveStockChartSPXTooltip(e, chart, dataset) {
+    // Move the tooltip and update it content
+    const DateSegmentWidth = ((chart.width - chart.marginRight - chart.marginLeft) / dataset.length);
+    const canvasPointerX = d3.pointer(e)[0];
+    const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - (DateSegmentWidth / 2)) / DateSegmentWidth), (dataset.length - 1)), 0);
+
+    const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataset[closestXPoint].Date}</div>
+        <div><span style="font-weight:bold; color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",")(dataset[closestXPoint].Close)}</div>`;
+
+    chart.tooltip.selection
+        .style("left", `${e.clientX}px`)
+        .style("top", `${100}px`)
+        .node()
+        .innerHTML = tooltipContent;
+
+    // Move the tooltip vertical rule
+    chart.linearRule.selection
+        .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
 }
