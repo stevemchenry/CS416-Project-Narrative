@@ -436,18 +436,44 @@ function renderScene2Canvas() {
         .on("mousemove", e => moveStockChartSPXTooltip(e, chart, dataDotComBurst));
 
     // Create the annotations
-    /*
-    const annotations = chart.selection.append("g")
+    const chartAnnotationsGroup = chart.selection.append("g")
         .attr("id", "chart-annotations")
+
+    let annotationText = [
+        "The peak of the dot-com",
+        "bubble occured in mid",
+        "March of 2001, with the",
+        "S&P 500 reaching a record",
+        "high of over $1,500."
+    ];
     
-    annotations.append("path")
-        .attr("fill", "none")
-        .attr("stroke", "#444")
-        .attr("stroke-width", "1")
-        .attr("stroke-dasharray", "2")
-        .attr("d", `M100,200L100,350`);
-    */
-        
+    createAnnotation(chartAnnotationsGroup,
+        chart.phases.dotComBurst.scales.x(new Date("2000-03-18")),
+        chart.phases.dotComBurst.scales.y(1527.46),
+        200,
+        annotationText,
+        "bottomright")
+        .attr("id", "chart-annotation-s1a1");
+
+
+
+    
+    let annotationText2 = [
+        "After the dot-com bubble",
+        "burst, the S&P 500 fell",
+        "to a low of around $800."
+    ];
+
+    createAnnotation(chartAnnotationsGroup,
+        chart.phases.dotComBurst.scales.x(new Date("2002-09-28")),
+        chart.phases.dotComBurst.scales.y(800.58),
+        300,
+        annotationText2,
+        "topleft")
+        .attr("id", "chart-annotation-s1a2");
+
+
+
     // Perform the chart's entrance transition
     chart.selection.transition()
         .duration(sceneTransitionTime)
@@ -846,4 +872,80 @@ function moveStockChartSPXTooltip(e, chart, dataset) {
     // Move the tooltip vertical rule
     chart.linearRule.selection
         .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
+}
+
+// Create annotation
+function createAnnotation(containerSelection, x, y, offsetY, textLines, position = "bottomright") {
+    // Determine inversions based upon the direction; default is "bottomright"
+    const width = 180;
+    const textHeight = 17;
+    const textIndent = 3;
+    const markRadius = 5;
+
+    let textOffsetX = textIndent;
+    let textOffsetY = offsetY;
+    let markX = 0;
+    let markY = 0;
+    let textCradleBarX = 0;
+    let textCradleBarY = offsetY;
+    let directionMultiplierY = 1;
+
+    // Create this annotation's group
+    const annotation = containerSelection.append("g");
+
+    // Create the mark
+    const mark = annotation.append("circle")
+        .attr("pointer-events", "none")
+        .attr("r", markRadius)
+        .attr("fill", "none")
+        .attr("stroke", "#333")
+        .attr("stroke-width", "2")
+        .attr("cx", markX);
+        
+    // Create the mark pointer
+    const markPointer = annotation.append("path")
+        .attr("pointer-events", "none")
+        .attr("fill", "none")
+        .attr("stroke", "#333")
+        .attr("stroke-width", "1")
+        .attr("stroke-dasharray", "2");
+
+    // Create the text cradle bar
+    const textCradleBar = annotation.append("path")
+        .attr("pointer-events", "none")
+        .attr("fill", "none")
+        .attr("stroke", "#333")
+        .attr("d", `M0,${offsetY}L${width},${offsetY}`);
+    
+    if((position === "topright") || (position === "topleft")) {
+        // Invert y coordinates
+        y = y - offsetY - (textLines.length * textHeight);
+        markY = offsetY + (textLines.length * textHeight);
+        textCradleBarY = (textLines.length * textHeight);
+        textOffsetY = -5;
+        directionMultiplierY = -1
+    }
+
+    if((position === "bottomleft") || (position === "topleft")) {
+        // Invert x coordinates
+        textCradleBarX = (width * -1);
+        textOffsetX = (width * -1) + textIndent;
+    }
+
+    // Set annotation element positions based upon the position
+    annotation.attr("transform", `translate(${x},${y})`);
+    mark.attr("cy", markY);
+    markPointer.attr("d", `M${markX},${textCradleBarY}L${markX},${markY + (directionMultiplierY * markRadius)}`);
+    textCradleBar.attr("d", `M${textCradleBarX},${textCradleBarY}L${textCradleBarX + width},${textCradleBarY}`);
+
+    // Create the text content
+    for(let i = 0; i < textLines.length; ++i) {
+        annotation.append("text")
+            .text(textLines[i])
+            .attr("pointer-events", "none")
+            .attr("fill", "#333")
+            .attr("transform", `translate(${textOffsetX},${textOffsetY + (textHeight * (i + 1))})`)
+    }
+
+    return annotation;
 }
