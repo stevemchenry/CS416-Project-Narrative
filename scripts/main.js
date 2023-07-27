@@ -891,10 +891,10 @@ function createAnnotation(containerSelection, x, y, offsetY, textLines, position
     let directionMultiplierY = 1;
 
     // Create this annotation's group
-    const annotation = containerSelection.append("g");
+    const annotationGroup = containerSelection.append("g");
 
     // Create the mark
-    const mark = annotation.append("circle")
+    const mark = annotationGroup.append("circle")
         .attr("pointer-events", "none")
         .attr("r", markRadius)
         .attr("fill", "none")
@@ -903,7 +903,7 @@ function createAnnotation(containerSelection, x, y, offsetY, textLines, position
         .attr("cx", markX);
         
     // Create the mark pointer
-    const markPointer = annotation.append("path")
+    const markPointer = annotationGroup.append("path")
         .attr("pointer-events", "none")
         .attr("fill", "none")
         .attr("stroke", "#333")
@@ -911,11 +911,22 @@ function createAnnotation(containerSelection, x, y, offsetY, textLines, position
         .attr("stroke-dasharray", "2");
 
     // Create the text cradle bar
-    const textCradleBar = annotation.append("path")
+    const textCradleBar = annotationGroup.append("path")
         .attr("pointer-events", "none")
         .attr("fill", "none")
         .attr("stroke", "#333")
         .attr("d", `M0,${offsetY}L${width},${offsetY}`);
+
+    // Create the text content
+    const textGroup = annotationGroup.append("g");
+
+    for(let i = 0; i < textLines.length; ++i) {
+        textGroup.append("text")
+            .text(textLines[i])
+            .attr("pointer-events", "none")
+            .attr("fill", "#333")
+            .attr("transform", `translate(0,${textHeight * (i + 1)})`)
+    }
     
     if((position === "topright") || (position === "topleft")) {
         // Invert y coordinates
@@ -933,19 +944,11 @@ function createAnnotation(containerSelection, x, y, offsetY, textLines, position
     }
 
     // Set annotation element positions based upon the position
-    annotation.attr("transform", `translate(${x},${y})`);
+    annotationGroup.attr("transform", `translate(${x},${y})`);
     mark.attr("cy", markY);
     markPointer.attr("d", `M${markX},${textCradleBarY}L${markX},${markY + (directionMultiplierY * markRadius)}`);
     textCradleBar.attr("d", `M${textCradleBarX},${textCradleBarY}L${textCradleBarX + width},${textCradleBarY}`);
+    textGroup.attr("transform", `translate(${textOffsetX},${textOffsetY})`);
 
-    // Create the text content
-    for(let i = 0; i < textLines.length; ++i) {
-        annotation.append("text")
-            .text(textLines[i])
-            .attr("pointer-events", "none")
-            .attr("fill", "#333")
-            .attr("transform", `translate(${textOffsetX},${textOffsetY + (textHeight * (i + 1))})`)
-    }
-
-    return annotation;
+    return annotationGroup;
 }
