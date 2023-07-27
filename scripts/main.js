@@ -444,7 +444,7 @@ function renderScene2Canvas() {
             
             // Create the tooltip
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataDotComBurst.length - 1)), 0);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
@@ -465,7 +465,7 @@ function renderScene2Canvas() {
         .on("mousemove", e => {
             // Move the tooltip and update it content
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataDotComBurst.length - 1)), 0);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataDotComBurst[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataDotComBurst[closestXPoint].Ticker}</span>: $${d3.format(",")(dataDotComBurst[closestXPoint].Close)}</div>`;
@@ -547,7 +547,7 @@ function renderScene3Canvas() {
     const chartTitleGroup = chart.selection.select("#chart-title-group");
 
     chartTitleGroup.selectAll("text")
-        .datum("S&P 500 (SPX) January 2000 - July 2007")
+        .datum("S&P 500 (SPX) January 2000 - June 2007")
         .text(d => d);
 
     // Create the x scale
@@ -584,7 +584,7 @@ function renderScene3Canvas() {
             
             // Create the tooltip
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
@@ -605,7 +605,7 @@ function renderScene3Canvas() {
         .on("mousemove", e => {
             // Move the tooltip and update it content
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
@@ -734,7 +734,7 @@ function renderScene4Canvas() {
             
             // Create the tooltip
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
@@ -755,7 +755,7 @@ function renderScene4Canvas() {
         .on("mousemove", e => {
             // Move the tooltip and update it content
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
@@ -907,7 +907,7 @@ function renderScene5Canvas() {
             
             // Create the tooltip
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
@@ -928,7 +928,7 @@ function renderScene5Canvas() {
         .on("mousemove", e => {
             // Move the tooltip and update it content
             const canvasPointerX = d3.pointer(e)[0];
-            const closestXPoint = Math.round(Math.abs(canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth);
+            const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - DateSegmentWidthHalf) / DateSegmentWidth), (dataSubsetThroughNow.length - 1)), 0);
 
             const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataSubsetThroughNow[closestXPoint].Date}</div>
                 <div><span style="font-weight:bold; color:steelblue;">${dataSubsetThroughNow[closestXPoint].Ticker}</span>: $${d3.format(",")(dataSubsetThroughNow[closestXPoint].Close)}</div>`;
