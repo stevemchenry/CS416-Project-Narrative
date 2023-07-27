@@ -374,20 +374,16 @@ function renderScene2Canvas() {
         .domain(d3.extent(dataDotComBurst, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
-    const scaleX = chart.phases.dotComBurst.scales.x;
-
     // Create the y scale
     chart.phases.dotComBurst.scales.y = d3.scaleLinear()
         .domain([600, 1600])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
-
-    const scaleY = chart.phases.dotComBurst.scales.y;
-
+        
     // Create the x axis
     chart.selection.append("g")
         .attr("id", "chart-axis-x")
         .attr("transform", `translate(0,${chart.height - chart.marginBottom})`)
-        .call(d3.axisBottom(scaleX))
+        .call(d3.axisBottom(chart.phases.dotComBurst.scales.x))
         // Create the axis label
         .append("text")
         .text("Date")
@@ -400,7 +396,7 @@ function renderScene2Canvas() {
     chart.selection.append("g")
         .attr("id", "chart-axis-y")
         .attr("transform", `translate(${chart.marginLeft},0)`)
-        .call(d3.axisLeft(scaleY))
+        .call(d3.axisLeft(chart.phases.dotComBurst.scales.y))
         // Create the axis label
         .append("text")
         .text("Value")
@@ -544,17 +540,11 @@ function renderScene3Canvas() {
         .domain(d3.extent(dataSubsetThroughNow, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
-    const scaleX = chart.phases.growthPeriod2000s.scales.x;
-
     // Create the y scale (this should be the same as the previous phase)
-    chart.phases.growthPeriod2000s.scales.y = d3.scaleLinear()
-        .domain([600, 1600])
-        .range([(chart.height - chart.marginBottom), chart.marginTop]);
-
-    const scaleY = chart.phases.growthPeriod2000s.scales.y;
+    chart.phases.growthPeriod2000s.scales.y = chart.phases.dotComBurst.scales.y;
 
     // Rescale the x axis
-    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, scaleX, chartTransitionTime);
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.growthPeriod2000s.scales.x, chartTransitionTime);
 
     // Update the tooltip hitbox
     const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
@@ -670,17 +660,11 @@ function renderScene4Canvas() {
         .domain(d3.extent(dataSubsetThroughNow, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
-    const scaleX = chart.phases.greatRecession.scales.x;
-
     // Create the y scale (this should be the same as the previous two phases)
-    chart.phases.greatRecession.scales.y = d3.scaleLinear()
-        .domain([600, 1600])
-        .range([(chart.height - chart.marginBottom), chart.marginTop]);
-
-    const scaleY = chart.phases.greatRecession.scales.y;
+    chart.phases.greatRecession.scales.y = chart.phases.dotComBurst.scales.y;
 
     // Rescale the x axis
-    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, scaleX, chartTransitionTime);
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.greatRecession.scales.x, chartTransitionTime);
 
     // Update the tooltip hitbox
     const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
@@ -801,18 +785,14 @@ function renderScene5Canvas() {
         .domain(d3.extent(datasets.spxHistorical, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
-    const scaleX = chart.phases.postGreatRecession.scales.x;
-
     // Create the y scale (this scale differs from the previous three scenes)
     chart.phases.postGreatRecession.scales.y = d3.scaleLinear()
         .domain([600, 5000])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
-    const scaleY = chart.phases.postGreatRecession.scales.y;
-
     // Rescale the x and y axes
-    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, scaleX, chartTransitionTime);
-    performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, scaleY, chartTransitionTime);
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.postGreatRecession.scales.x, chartTransitionTime);
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.postGreatRecession.scales.y, chartTransitionTime);
 
     // Update the tooltip hitbox
     const graphWidth = (chart.width - chart.marginRight - chart.marginLeft);
