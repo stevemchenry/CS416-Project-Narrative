@@ -90,8 +90,8 @@ export const annotations = [
         },
         textLines : [
             "The Great Recession sunk",
-            "the S&P 500 to a low of",
-            "near 680 in February 2009."
+            "the S&P 500 to a low near",
+            "680 by February 2009."
         ]
     }
 ]
