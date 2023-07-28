@@ -377,7 +377,7 @@ function renderScene2Canvas() {
 
     // Create the y scale
     chart.phases.dotComBurst.scales.y = d3.scaleLinear()
-        .domain([600, 1600])
+        .domain([500, 1600])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
     // Create the x axis
@@ -497,7 +497,7 @@ function renderScene3Canvas() {
     const chart = charts.line;
 
     // Create the dataset subset
-    chart.phases.growthPeriod2000s.dateEnd = new Date("2007-07-07");
+    chart.phases.growthPeriod2000s.dateEnd = new Date("2007-10-06");
     chart.phases.growthPeriod2000s.dataSubset = datasets.spxHistorical.filter(d => ((dateParser(d.Date) >= chart.phases.dotComBurst.dateEnd) && (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd)));
     const dataSubsetCurrentRange = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd));
 
@@ -508,7 +508,7 @@ function renderScene3Canvas() {
     const chartTitleGroup = chart.selection.select("#chart-title-group");
 
     chartTitleGroup.selectAll("text")
-        .datum("S&P 500 (SPX) January 2000 - Early July 2007")
+        .datum("S&P 500 (SPX) January 2000 - Early October 2007")
         .text(d => d);
 
     // Create the x scale
@@ -580,6 +580,7 @@ function renderScene3Canvas() {
     performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, delayTime);
     delayTime += pathEntranceTransitionTime;
 
+    // Perform the annotation entrance transition
     performAnnotationEntranceTransition(annotation2, annotationEntranceTransitionTime, delayTime);
 }
 
@@ -655,15 +656,53 @@ function renderScene4Canvas() {
         chart.phases.greatRecession.scales,
         chartTransitionTime);
 
+    let delayTime = chartTransitionTime;
+
+    // Perform the annotation position shift transition
+    performAnnotationReposition(chart.selection.select("#chart-annotation-0"),
+        chart.phases.growthPeriod2000s.scales.x(storyContent.annotations[0].position.x),
+        chart.phases.growthPeriod2000s.scales.y(storyContent.annotations[0].position.y),
+        chart.phases.greatRecession.scales.x(storyContent.annotations[0].position.x),
+        chart.phases.greatRecession.scales.y(storyContent.annotations[0].position.y),
+        chartTransitionTime);
+
+    performAnnotationReposition(chart.selection.select("#chart-annotation-1"),
+        chart.phases.growthPeriod2000s.scales.x(storyContent.annotations[1].position.x),
+        chart.phases.growthPeriod2000s.scales.y(storyContent.annotations[1].position.y),
+        chart.phases.greatRecession.scales.x(storyContent.annotations[1].position.x),
+        chart.phases.greatRecession.scales.y(storyContent.annotations[1].position.y),
+        chartTransitionTime);
+
+    performAnnotationReposition(chart.selection.select("#chart-annotation-2"),
+        chart.phases.growthPeriod2000s.scales.x(storyContent.annotations[2].position.x),
+        chart.phases.growthPeriod2000s.scales.y(storyContent.annotations[2].position.y),
+        chart.phases.greatRecession.scales.x(storyContent.annotations[2].position.x),
+        chart.phases.greatRecession.scales.y(storyContent.annotations[2].position.y),
+        chartTransitionTime);
+
     // Create the extended path
     const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-3", chart.phases.greatRecession.dataSubset, chart.phases.greatRecession.scales, "steelblue");
 
     const pathValueSPXLength = pathValueSPX.node().getTotalLength();
     pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
         .attr("stroke-dasharray", pathValueSPXLength);
-    
+
+    // Create the annotation
+    const annotation3 = createAnnotation(chart.selection.select("#chart-annotations-group"),
+        chart.phases.greatRecession.scales.x(storyContent.annotations[3].position.x),
+        chart.phases.greatRecession.scales.y(storyContent.annotations[3].position.y),
+        25,
+        storyContent.annotations[3].textLines,
+        "bottomleft")
+        .attr("id", "chart-annotation-3")
+        .attr("opacity", "0.0");
+        
     // Perform the extended line's entrance transition
     performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, chartTransitionTime);
+    delayTime += pathEntranceTransitionTime;
+
+    // Perform the annotation entrance transition
+    performAnnotationEntranceTransition(annotation3, annotationEntranceTransitionTime, delayTime);
 }
 
 // Load scene 5

@@ -32,7 +32,11 @@ export const scenes = [
     },
     {
         title : "2007-2009: The Great Recession",
-        body : []
+        body : [
+            "These record levels were short-lived, however. In December 2009, the financial sector experienced a complete meltdown. A housing bubble burst combined with years of banks' subprime mortgage lending practices resulted in many borrowers defaulting on their loans in a short period. With consumers running out of cash to spend, and banks with limited cash to lend, all sectors of the market followed in the collapse like a house of cards. The crisis quickly spread worldwide.",
+            "The S&P chart shows the speed and impact of the event. In less than a year and a half, the index's value plunged 60%, experiencing multiple periods of near free-fall. By late February 2009, the value of the S&P 500 was around 680, or 15% further below its dot-com burst low. This downturn turned into a recession, and was termed \"The Great Recession\" - a nod to its similarities to the Great Depression of the late 1920s and 1930s.",
+            "Again staring in the face of another financial crisis, investors were faced with the same test. Should they exit the market to preserve what remains of their net worth? Or should they stay invested in one of the worst markets downturns in a century and hope for another recovery as had consistently occurred before?"
+        ]
     },
     {
         title : "2009-2023: The Rest of the Story",
@@ -68,15 +72,26 @@ export const annotations = [
     },
     {
         position : {
-            x : new Date("2007-07-07"),
-            y : 1552.50
+            x : new Date("2007-10-06"),
+            y : 1561.80
         },
         textLines : [
-            "Less than 5 years after the",
+            "Just 5 years following the",
             "dot-com burst, the S&P 500",
             "climbed to return to its peak",
-            "value of around $1,500 in",
-            "July 2007."
+            "value of over $1,500 in early",
+            "October 2007."
+        ]
+    },
+    {
+        position : {
+            x : new Date("2009-02-28"),
+            y : 683.38
+        },
+        textLines : [
+            "The Great Recession sunk",
+            "the S&P 500 to a low of",
+            "near 680 in February 2009."
         ]
     }
 ]
