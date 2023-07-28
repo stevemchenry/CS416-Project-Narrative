@@ -40,7 +40,18 @@ export const scenes = [
     },
     {
         title : "2009-2023: The Rest of the Story",
-        body: []
+        body : [
+            "The chart, now exapanded to the present-day (at the time of creation), shows in dramatic fashion that the correct decision is to stay in the market for the long-term, prepared to whether the periodic short-term downturns which will come and pass. The market  growth of the past 14 years completely dwarfs the market of the 2000s which appeared much more dramatic when viewed in isolation. Clearly, a long-term perspective is key to market success.",
+            "That's not to say the last 14 years have all been smooth sailing by any means. The market has recently been battle-tested in just about every way: from political upheaval to a once-in-a-centry global pandemic. After each of them, however, the world, and the market, continued to move forward.",
+            "To answer our original question, \"are these new investors prepared to weather the next inevitable market downturn?\" Yes, if they maintain a long-term perspective and don't give into the fear of short-term downturns or greed of hyped market bubbles.",
+            "Next, we'll conclude up by taking a look at the historical performance of today's retail investors' top picks."
+        ]
+    },
+    {
+        title : "Predicting the Future with Past Trends",
+        body : [
+            "At the beginning of the presentation, we looked at today's retail investors' top 10 stock picks of early 2023. Now, we'll look at how these stocks have fared historically against the S&P 500 since the year 2000 (or their listing date). Given historical trends, do you think they look to be good long-term picks, or just hot short-term picks? You're in the driver's seat now. Use the controls below to control the chart."
+        ]
     }
 ]
 
@@ -92,6 +103,38 @@ export const annotations = [
             "The Great Recession sunk",
             "the S&P 500 to a low near",
             "680 by February 2009."
+        ]
+    },
+    {
+        position : {
+            x : new Date("2020-03-14"),
+            y : 2304.92
+        },
+        textLines : [
+            "Panic as the COVID-19",
+            "pandemic erupts across",
+            "the globe in March 2020."
+        ]
+    },
+    {
+        position : {
+            x : new Date("2021-12-25"),
+            y : 4766.18
+        },
+        textLines : [
+            "The \"everything bubble\"",
+            "of mid-pandemic speculation",
+            "comes to a head in late 2021."
+        ]
+    },
+    {
+        position : {
+            x : new Date("2023-06-24"),
+            y : 4450.38
+        },
+        textLines : [
+            "A bull market follows 2022",
+            "uncertainty in June 2023."
         ]
     }
 ]

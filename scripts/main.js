@@ -34,7 +34,7 @@ function init() {
     scene.previous = 0;
     scene.current = 0;
     scene.viewed = storyContent.scenes.map(a => false);
-    scene.loader = [null, loadScene1, loadScene2, loadScene3, loadScene4, loadScene5];
+    scene.loader = [null, loadScene1, loadScene2, loadScene3, loadScene4, loadScene5, loadScene6];
 
     // Create the chart specifications
     charts.pie = {
@@ -786,8 +786,8 @@ function renderScene5Canvas() {
     const annotation2 = createAnnotation(chartAnnotationsGroup,
         chart.phases.postGreatRecession.scales.x(storyContent.annotations[2].position.x),
         chart.phases.postGreatRecession.scales.y(storyContent.annotations[2].position.y),
-        200,
-        storyContent.annotations[3].textLines,
+        165,
+        storyContent.annotations[2].textLines,
         "topright")
         .attr("id", "chart-annotation-2")
         .attr("opacity", "0.0");
@@ -795,10 +795,37 @@ function renderScene5Canvas() {
     const annotation3 = createAnnotation(chartAnnotationsGroup,
         chart.phases.postGreatRecession.scales.x(storyContent.annotations[3].position.x),
         chart.phases.postGreatRecession.scales.y(storyContent.annotations[3].position.y),
-        250,
+        225,
         storyContent.annotations[3].textLines,
         "topright")
         .attr("id", "chart-annotation-3")
+        .attr("opacity", "0.0");
+
+    const annotation4 = createAnnotation(chartAnnotationsGroup,
+        chart.phases.postGreatRecession.scales.x(storyContent.annotations[4].position.x),
+        chart.phases.postGreatRecession.scales.y(storyContent.annotations[4].position.y),
+        80,
+        storyContent.annotations[4].textLines,
+        "bottomleft")
+        .attr("id", "chart-annotation-4")
+        .attr("opacity", "0.0");
+
+    const annotation5 = createAnnotation(chartAnnotationsGroup,
+        chart.phases.postGreatRecession.scales.x(storyContent.annotations[5].position.x),
+        chart.phases.postGreatRecession.scales.y(storyContent.annotations[5].position.y),
+        540,
+        storyContent.annotations[5].textLines,
+        "bottomleft")
+        .attr("id", "chart-annotation-5")
+        .attr("opacity", "0.0");
+
+    const annotation6 = createAnnotation(chartAnnotationsGroup,
+        chart.phases.postGreatRecession.scales.x(storyContent.annotations[6].position.x),
+        chart.phases.postGreatRecession.scales.y(storyContent.annotations[6].position.y),
+        560,
+        storyContent.annotations[6].textLines,
+        "bottomleft")
+        .attr("id", "chart-annotation-6")
         .attr("opacity", "0.0");
 
     // Rescale the x and y axes
@@ -855,7 +882,73 @@ function renderScene5Canvas() {
     performAnnotationEntranceTransition(annotation1, annotationEntranceTransitionTime, delayTime);
     performAnnotationEntranceTransition(annotation2, annotationEntranceTransitionTime, delayTime);
     performAnnotationEntranceTransition(annotation3, annotationEntranceTransitionTime, delayTime);
+    performAnnotationEntranceTransition(annotation4, annotationEntranceTransitionTime, delayTime);
+    performAnnotationEntranceTransition(annotation5, annotationEntranceTransitionTime, delayTime);
+    performAnnotationEntranceTransition(annotation6, annotationEntranceTransitionTime, delayTime);
 }
+
+
+
+
+
+// Load scene 6
+function loadScene6() {
+    // Load the required dataset if it has not yet been loaded
+    if(datasets.spxHistorical === undefined) {
+        d3.csv("./data/spx-historical.csv")
+            .then(dataset => {
+                datasets.spxHistorical = dataset;
+                renderScene5Canvas();
+            });
+    
+    } else {
+        renderScene6Canvas();
+    }
+}
+
+// Render scene 6's visualization onto the canvas
+function renderScene6Canvas() {
+    // Declare the chart and its attributes
+    const chart = charts.line;
+
+    // Create the dataset subset
+    const dataPostGreatRecession = datasets.spxHistorical.filter(d => (dateParser(d.Date) >= chart.phases.greatRecession.dateEnd));
+
+    // Update the chart title
+    const chartTitleGroup = chart.selection.select("#chart-title-group");
+
+    chartTitleGroup.selectAll("text")
+        .datum("Retail Investors' Top Picks January 2000 - June 2023")
+        .text(d => d);
+
+    // Clear any existing pre-existing graph content
+    const chartGraphGroup = chart.selection.select("#chart-graph-group");
+    chartGraphGroup.selectAll("path").remove();
+
+    // Fade out the annotations group and mark them as initially deselected
+    const chartAnnotationsGroup = chart.selection.select("#chart-annotations-group");
+
+    chartAnnotationsGroup
+        .interrupt()
+        .attr("opacity", "1.0")
+        .transition()
+        .duration(annotationEntranceTransitionTime)
+        .attr("opacity", "0.0")
+
+    chartAnnotationsGroup
+        .transition()
+        .delay(annotationEntranceTransitionTime)
+        .duration(0)
+        .style("display", "none")
+        .attr("opacity", "1.0");
+
+    // Snap re-draw the SPX graph as a single path
+    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx", datasets.spxHistorical, chart.phases.postGreatRecession.scales, "steelblue");
+}
+
+
+
+
 
 // Calculate the center point of a chart's x axis
 function chartAxisXCenter(chart) {
@@ -966,7 +1059,7 @@ function createStockChartSPXTooltip(e, chart, dataset) {
     const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - (DateSegmentWidth / 2)) / DateSegmentWidth), (dataset.length - 1)), 0);
 
     const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataset[closestXPoint].Date}</div>
-        <div><span style="font-weight:bold; color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",")(dataset[closestXPoint].Close)}</div>`;
+        <div><span style="font-weight:bold; color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",.2f")(dataset[closestXPoint].Close)}</div>`;
     
     chart.tooltip.selection = createTooltip(tooltipContent)
         .style("left", `${e.clientX}px`)
@@ -985,7 +1078,7 @@ function moveStockChartSPXTooltip(e, chart, dataset) {
     const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - (DateSegmentWidth / 2)) / DateSegmentWidth), (dataset.length - 1)), 0);
 
     const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataset[closestXPoint].Date}</div>
-        <div><span style="font-weight:bold; color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",")(dataset[closestXPoint].Close)}</div>`;
+        <div><span style="font-weight:bold; color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",.2f")(dataset[closestXPoint].Close)}</div>`;
 
     chart.tooltip.selection
         .style("left", `${e.clientX}px`)

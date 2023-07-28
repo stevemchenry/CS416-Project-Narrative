@@ -67,10 +67,10 @@ nav > ul > li {
     font-family: 'Roboto', sans-serif;
     font-weight: bold;
     cursor: pointer;
-    min-width: 35px;
-    height: 35px;
+    min-width: 33px;
+    height: 33px;
     text-align: center;
-    line-height: 35px;
+    line-height: 33px;
 }
 
 nav > ul > li.current {
@@ -108,7 +108,7 @@ nav > ul > li:not(:first-of-type) {
 }
 
 #story > h2 {
-    width: fit-content;
+    width: fit-content(100%);
     text-align: center;
 }
 
