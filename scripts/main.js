@@ -15,7 +15,7 @@ const canvasHeight = 800;
 const sceneTransitionTime = 500;
 const chartTransitionTime = 2000;
 const pathEntranceTransitionTime = chartTransitionTime * 2;
-const annotationEntranceTransitionTime = 1000;
+const annotationEntranceTransitionTime = 500;
 const dateParser = d3.utcParse("%Y-%m-%d");
 
 // Execute the narrative visualization
@@ -748,9 +748,64 @@ function renderScene5Canvas() {
         .domain([600, 5000])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
+    // Fade out, delete, and then recreate the previous annotations after the large rescaling is performed
+    const chartAnnotationsGroup = chart.selection.select("#chart-annotations-group");
+
+    chartAnnotationsGroup
+        .interrupt()
+        .attr("opacity", "1.0")
+        .transition()
+        .duration(annotationEntranceTransitionTime)
+        .attr("opacity", "0.0")
+        .selectAll("g")
+        .remove();
+    
+    chartAnnotationsGroup
+        .transition()
+        .delay(annotationEntranceTransitionTime)
+        .attr("opacity", "1.0");
+
+    const annotation0 = createAnnotation(chartAnnotationsGroup,
+        chart.phases.postGreatRecession.scales.x(storyContent.annotations[0].position.x),
+        chart.phases.postGreatRecession.scales.y(storyContent.annotations[0].position.y),
+        400,
+        storyContent.annotations[0].textLines,
+        "topright")
+        .attr("id", "chart-annotation-0")
+        .attr("opacity", "0.0");
+
+    const annotation1 = createAnnotation(chartAnnotationsGroup,
+        chart.phases.postGreatRecession.scales.x(storyContent.annotations[1].position.x),
+        chart.phases.postGreatRecession.scales.y(storyContent.annotations[1].position.y),
+        400,
+        storyContent.annotations[1].textLines,
+        "topright")
+        .attr("id", "chart-annotation-1")
+        .attr("opacity", "0.0");
+
+    const annotation2 = createAnnotation(chartAnnotationsGroup,
+        chart.phases.postGreatRecession.scales.x(storyContent.annotations[2].position.x),
+        chart.phases.postGreatRecession.scales.y(storyContent.annotations[2].position.y),
+        200,
+        storyContent.annotations[3].textLines,
+        "topright")
+        .attr("id", "chart-annotation-2")
+        .attr("opacity", "0.0");
+
+    const annotation3 = createAnnotation(chartAnnotationsGroup,
+        chart.phases.postGreatRecession.scales.x(storyContent.annotations[3].position.x),
+        chart.phases.postGreatRecession.scales.y(storyContent.annotations[3].position.y),
+        250,
+        storyContent.annotations[3].textLines,
+        "topright")
+        .attr("id", "chart-annotation-3")
+        .attr("opacity", "0.0");
+
     // Rescale the x and y axes
-    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.postGreatRecession.scales.x, chartTransitionTime);
-    performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.postGreatRecession.scales.y, chartTransitionTime);
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.postGreatRecession.scales.x, chartTransitionTime, 0);
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.postGreatRecession.scales.y, chartTransitionTime, 0);
+
+    let delayTime = chartTransitionTime;
 
     // Update the tooltip hitbox
     chart.selection.select("#chart-graph-tooltip-hitbox-group")
@@ -793,6 +848,13 @@ function renderScene5Canvas() {
 
     // Perform the extended line's entrance transition
     performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, chartTransitionTime);
+    delayTime += pathEntranceTransitionTime;
+
+    // Perform the annotation (re)entrance transition
+    performAnnotationEntranceTransition(annotation0, annotationEntranceTransitionTime, delayTime);
+    performAnnotationEntranceTransition(annotation1, annotationEntranceTransitionTime, delayTime);
+    performAnnotationEntranceTransition(annotation2, annotationEntranceTransitionTime, delayTime);
+    performAnnotationEntranceTransition(annotation3, annotationEntranceTransitionTime, delayTime);
 }
 
 // Calculate the center point of a chart's x axis
@@ -873,9 +935,10 @@ function performPathRescalingTransition(pathSelection, dataset, scalesBegin, sca
 }
 
 // Perform an animated axis rescaling
-function performAxisRescalingTransition(axisSelection, axisOrientation, scaleNew, durationTime) {
+function performAxisRescalingTransition(axisSelection, axisOrientation, scaleNew, durationTime, delayTime) {
     return axisSelection
         .transition()
+        .delay(delayTime)
         .duration(durationTime)
         .ease(d3.easeCubic)
         .call(axisOrientation(scaleNew));
