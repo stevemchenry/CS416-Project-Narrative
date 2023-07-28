@@ -15,6 +15,7 @@ const canvasHeight = 800;
 const sceneTransitionTime = 500;
 const chartTransitionTime = 2000;
 const pathEntranceTransitionTime = chartTransitionTime * 2;
+const annotationEntranceTransitionTime = 1000;
 const dateParser = d3.utcParse("%Y-%m-%d");
 
 // Execute the narrative visualization
@@ -437,7 +438,7 @@ function renderScene2Canvas() {
 
     // Create the annotations
     const chartAnnotationsGroup = chart.selection.append("g")
-        .attr("id", "chart-annotations")
+        .attr("id", "chart-annotations");
 
     let annotationText = [
         "The peak of the dot-com",
@@ -447,13 +448,14 @@ function renderScene2Canvas() {
         "high of over $1,500."
     ];
     
-    createAnnotation(chartAnnotationsGroup,
+    const annotationS1A1 = createAnnotation(chartAnnotationsGroup,
         chart.phases.dotComBurst.scales.x(new Date("2000-03-18")),
         chart.phases.dotComBurst.scales.y(1527.46),
         410,
         annotationText,
         "bottomright")
-        .attr("id", "chart-annotation-s1a1");
+        .attr("id", "chart-annotation-s1a1")
+        .attr("opacity", "0.0");
 
     let annotationText2 = [
         "After the dot-com bubble",
@@ -462,13 +464,14 @@ function renderScene2Canvas() {
         "half of its peak value."
     ];
 
-    createAnnotation(chartAnnotationsGroup,
+    const annotationS1A2 = createAnnotation(chartAnnotationsGroup,
         chart.phases.dotComBurst.scales.x(new Date("2002-09-28")),
         chart.phases.dotComBurst.scales.y(800.58),
         400,
         annotationText2,
         "topleft")
-        .attr("id", "chart-annotation-s1a2");
+        .attr("id", "chart-annotation-s1a2")
+        .attr("opacity", "0.0");
 
     // Perform the chart's entrance transition
     chart.selection.transition()
@@ -476,8 +479,16 @@ function renderScene2Canvas() {
         .ease(d3.easeLinear)
         .attr("opacity", "1.0");
 
+    let delayTime = sceneTransitionTime;
+        
     // Perform the new path's entrance transition
-    performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, sceneTransitionTime);
+    performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, delayTime);
+    delayTime += pathEntranceTransitionTime;
+
+    // Perform the annotations' entrance transitions
+    performAnnotationEntranceTransition(annotationS1A1, annotationEntranceTransitionTime, delayTime);
+    performAnnotationEntranceTransition(annotationS1A2, annotationEntranceTransitionTime, delayTime);
+
 }
 
 // Load scene 3
@@ -546,14 +557,22 @@ function renderScene3Canvas() {
         chart.phases.growthPeriod2000s.scales,
         chartTransitionTime);
 
+    let delayTime = chartTransitionTime;
+
     // Perform the annotation position shift transition
     performAnnotationReposition(chart.selection.select("#chart-annotation-s1a1"),
+        chart.phases.dotComBurst.scales.x(new Date("2000-03-18")),
+        chart.phases.dotComBurst.scales.y(1527.46),
         chart.phases.growthPeriod2000s.scales.x(new Date("2000-03-18")),
-        chart.phases.growthPeriod2000s.scales.y(1527.46));
+        chart.phases.growthPeriod2000s.scales.y(1527.46),
+        chartTransitionTime);
 
     performAnnotationReposition(chart.selection.select("#chart-annotation-s1a2"),
+        chart.phases.dotComBurst.scales.x(new Date("2002-09-28")),
+        chart.phases.dotComBurst.scales.y(800.58),
         chart.phases.growthPeriod2000s.scales.x(new Date("2002-09-28")),
-        chart.phases.growthPeriod2000s.scales.y(800.58));
+        chart.phases.growthPeriod2000s.scales.y(800.58),
+        chartTransitionTime);
 
     // Create the extended path
     const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-2", chart.phases.growthPeriod2000s.dataSubset, chart.phases.growthPeriod2000s.scales, "steelblue");
@@ -563,7 +582,7 @@ function renderScene3Canvas() {
         .attr("stroke-dasharray", pathValueSPXLength);
     
     // Perform the extended line's entrance transition
-    performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, chartTransitionTime);
+    performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, delayTime);
 }
 
 // Load scene 4
@@ -955,10 +974,24 @@ function createAnnotation(containerSelection, x, y, offsetY, textLines, position
 }
 
 // Perform an annotation repositioning
-function performAnnotationReposition(annotationSelection, x, y, durationTime) {
+function performAnnotationReposition(annotationSelection, beginX, beginY, endX, endY, durationTime) {
+    return annotationSelection
+        // If the previous slide was still performing an annotation transition, interrupt it and snap-complete it
+        .interrupt()
+        .attr("opacity", "1.0")
+        .attr("transform", `translate(${beginX},${beginY})`)
+        // Perform the annotation transition
+        .transition()
+        .duration(durationTime)
+        .ease(d3.easeCubic)
+        .attr("transform", `translate(${endX},${endY})`);
+}
+
+// Perform an annotation entrance transition
+function performAnnotationEntranceTransition(annotationSelection, durationTime, delayTime) {
     return annotationSelection
         .transition()
-        .duration(chartTransitionTime)
-        .ease(d3.easeCubic)
-        .attr("transform", `translate(${x},${y})`);
+        .delay(delayTime)
+        .duration(durationTime)
+        .attr("opacity", "1.0");
 }
