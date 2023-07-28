@@ -450,29 +450,25 @@ function renderScene2Canvas() {
     createAnnotation(chartAnnotationsGroup,
         chart.phases.dotComBurst.scales.x(new Date("2000-03-18")),
         chart.phases.dotComBurst.scales.y(1527.46),
-        200,
+        410,
         annotationText,
         "bottomright")
         .attr("id", "chart-annotation-s1a1");
 
-
-
-    
     let annotationText2 = [
         "After the dot-com bubble",
-        "burst, the S&P 500 fell",
-        "to a low of around $800."
+        "burst, the S&P 500 fell to a",
+        "low of around $800; nearly",
+        "half of its peak value."
     ];
 
     createAnnotation(chartAnnotationsGroup,
         chart.phases.dotComBurst.scales.x(new Date("2002-09-28")),
         chart.phases.dotComBurst.scales.y(800.58),
-        300,
+        400,
         annotationText2,
         "topleft")
         .attr("id", "chart-annotation-s1a2");
-
-
 
     // Perform the chart's entrance transition
     chart.selection.transition()
@@ -549,6 +545,15 @@ function renderScene3Canvas() {
         chart.phases.dotComBurst.scales,
         chart.phases.growthPeriod2000s.scales,
         chartTransitionTime);
+
+    // Perform the annotation position shift transition
+    performAnnotationReposition(chart.selection.select("#chart-annotation-s1a1"),
+        chart.phases.growthPeriod2000s.scales.x(new Date("2000-03-18")),
+        chart.phases.growthPeriod2000s.scales.y(1527.46));
+
+    performAnnotationReposition(chart.selection.select("#chart-annotation-s1a2"),
+        chart.phases.growthPeriod2000s.scales.x(new Date("2002-09-28")),
+        chart.phases.growthPeriod2000s.scales.y(800.58));
 
     // Create the extended path
     const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx-2", chart.phases.growthPeriod2000s.dataSubset, chart.phases.growthPeriod2000s.scales, "steelblue");
@@ -884,8 +889,6 @@ function createAnnotation(containerSelection, x, y, offsetY, textLines, position
 
     let textOffsetX = textIndent;
     let textOffsetY = offsetY;
-    let markX = 0;
-    let markY = 0;
     let textCradleBarX = 0;
     let textCradleBarY = offsetY;
     let directionMultiplierY = 1;
@@ -894,13 +897,14 @@ function createAnnotation(containerSelection, x, y, offsetY, textLines, position
     const annotationGroup = containerSelection.append("g");
 
     // Create the mark
-    const mark = annotationGroup.append("circle")
+    annotationGroup.append("circle")
         .attr("pointer-events", "none")
         .attr("r", markRadius)
         .attr("fill", "none")
         .attr("stroke", "#333")
         .attr("stroke-width", "2")
-        .attr("cx", markX);
+        .attr("cx", 0)
+        .attr("cy", 0);
         
     // Create the mark pointer
     const markPointer = annotationGroup.append("path")
@@ -925,30 +929,36 @@ function createAnnotation(containerSelection, x, y, offsetY, textLines, position
             .text(textLines[i])
             .attr("pointer-events", "none")
             .attr("fill", "#333")
-            .attr("transform", `translate(0,${textHeight * (i + 1)})`)
+            .attr("transform", `translate(0,${textHeight * (i + 1)})`);
     }
     
-    if((position === "topright") || (position === "topleft")) {
-        // Invert y coordinates
-        y = y - offsetY - (textLines.length * textHeight);
-        markY = offsetY + (textLines.length * textHeight);
-        textCradleBarY = (textLines.length * textHeight);
-        textOffsetY = -5;
-        directionMultiplierY = -1
-    }
-
+    // Invert x coordinates if necessary
     if((position === "bottomleft") || (position === "topleft")) {
-        // Invert x coordinates
         textCradleBarX = (width * -1);
         textOffsetX = (width * -1) + textIndent;
     }
 
+    // Invert y coordinates if necessary
+    if((position === "topright") || (position === "topleft")) {
+        directionMultiplierY = -1;
+        textCradleBarY = (offsetY * -1);
+        textOffsetY = (offsetY * -1) - (textHeight * textLines.length) - (textHeight / 2);
+    }
+
     // Set annotation element positions based upon the position
     annotationGroup.attr("transform", `translate(${x},${y})`);
-    mark.attr("cy", markY);
-    markPointer.attr("d", `M${markX},${textCradleBarY}L${markX},${markY + (directionMultiplierY * markRadius)}`);
+    markPointer.attr("d", `M0,${textCradleBarY}L0,${directionMultiplierY * markRadius}`);
     textCradleBar.attr("d", `M${textCradleBarX},${textCradleBarY}L${textCradleBarX + width},${textCradleBarY}`);
     textGroup.attr("transform", `translate(${textOffsetX},${textOffsetY})`);
 
     return annotationGroup;
+}
+
+// Perform an annotation repositioning
+function performAnnotationReposition(annotationSelection, x, y, durationTime) {
+    return annotationSelection
+        .transition()
+        .duration(chartTransitionTime)
+        .ease(d3.easeCubic)
+        .attr("transform", `translate(${x},${y})`);
 }
