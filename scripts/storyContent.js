@@ -15,16 +15,19 @@ export const scenes = [
     {
         title: "2000-2002: The Burst of the Dot-com Bubble",
         body : [
-            "The late 1990s saw the previous largest market entry of retail investors during a period now called the \"dot-com bubble\". A wide swath of technology stocks experienced extreme speculative overvaluation spurred by the explosive introduction and growth of the Internet just a few years prior.",
-            "Investors flocked to stocks which seemed to be increasing in value for months to years with no end in sight. Many naively overinvested in overvalued stocks, and when the bubble burst in late 2000, a panicked sell-off ensued, lasting two years and bringing the value of the S&P 500 index to nearly half of its 2000 peak. Many investors, and indeed retail investors, experienced financial hardships as a result as a result of their overcommittment into their stock bets.",
-            "Today's market climate seems to have echoes of the dot-com bubble, where retail investors are flocking to primarily technology stocks whose values are currently soaring. As we'll see next, investors should be careful to simply cut all of their losses and completely exit the market in the event of a downturn, however."
+            "The late 1990s saw the previous largest market entry of retail investors during a period now called the \"dot-com bubble\". A wide swath of technology stocks experienced extreme speculative overvaluation spurred by the introduction and explosive growth of the Internet just a few years prior.",
+            "Novice investors flocked to stocks which seemed to be increasing in with no end in sight. Many naively overinvested in overvalued stocks, and when the bubble burst in late 2000, a panicked sell-off ensued, lasting two years. This brought the value of the S&P 500 index, typically seen as the general U.S. market indicator, to nearly half of its 2000 peak as seen in the chart. Many investors, and indeed retail investors, experienced financial hardships as a result.",
+            "Today's market climate seems to have some echoes of the dot-com bubble. Retail investors are flocking to primarily technology stocks whose values are currently soaring in a flurry of excitement around the prospects of artificial intelligence.",
+            "However, investors should be careful to not to panic and cut all of their losses by fully exiting the market in the event of a downturn as many did during the dot-com burst..."
         ]
     },
     {
         title: "2002-2007: A Return to Steady Growth",
         body : [
-            "After the lowest point of the dot-com burst in early 2002, the market entered a period of slow, but overall steady growth to about its former levels around the peak of the dot-com burst",
-            "A whole lot of people made a whole lot of money."
+            "The dot-com burst, though significant, was not the end of the market. And although some stocks failed, the market moved on and returned to an overall steady, upward trajectory over the next five years.",
+            "As can be seen, to panic and exit the market during the downturn is a poor decision for two main primary reasons. First, any stocks that an investor purchased during the bubble period would have been sold at a loss. Second, investors would miss out on a growing market, and would have to buy back into the market at a higher price, also having foregone potential recovered losses from stocks sold during the downturn.",
+            "In the expanded S&P 500 chart, we now see a fuller perspective of the market over a longer period of time. Even though the market took a big hit, it was able to recover overall. The recovery took a number of years, however, and demonstrates the necessity in adopting a long-term growth strategy for a stronger portfolio rather than buying into greed and fear with a short-term perspective.",
+            "Unfortunately, many of the novice dot-com retail investors were swept up in the short-term perspective and, ignoring the long-term perspective, panic sold their positions for heavy losses."
         ]
     },
     {
@@ -34,5 +37,46 @@ export const scenes = [
     {
         title : "2009-2023: The Rest of the Story",
         body: []
+    }
+]
+
+export const annotations = [
+    {
+        position : {
+            x : new Date("2000-03-18"),
+            y : 1527.46
+        },
+        textLines : [
+            "The peak of the dot-com",
+            "bubble occured in mid",
+            "March of 2001, with the",
+            "S&P 500 reaching a record",
+            "high of over $1,500."]
+    },
+    {
+        position : {
+            x : new Date("2002-09-28"),
+            y : 800.58
+        },
+        textLines : [
+            "After the dot-com bubble",
+            "burst, the S&P 500 fell to a",
+            "low of around $800; nearly",
+            "half of its prior peak value",
+            "in 2 years by October 2002."
+        ]
+    },
+    {
+        position : {
+            x : new Date("2007-07-07"),
+            y : 1552.50
+        },
+        textLines : [
+            "Less than 5 years after the",
+            "dot-com burst, the S&P 500",
+            "climbed to return to its peak",
+            "value of around $1,500 in",
+            "July 2007."
+        ]
     }
 ]

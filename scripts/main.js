@@ -438,39 +438,24 @@ function renderScene2Canvas() {
 
     // Create the annotations
     const chartAnnotationsGroup = chart.selection.append("g")
-        .attr("id", "chart-annotations");
-
-    let annotationText = [
-        "The peak of the dot-com",
-        "bubble occured in mid",
-        "March of 2001, with the",
-        "S&P 500 reaching a record",
-        "high of over $1,500."
-    ];
+        .attr("id", "chart-annotations-group");
     
-    const annotationS1A1 = createAnnotation(chartAnnotationsGroup,
-        chart.phases.dotComBurst.scales.x(new Date("2000-03-18")),
-        chart.phases.dotComBurst.scales.y(1527.46),
+    const annotation0 = createAnnotation(chartAnnotationsGroup,
+        chart.phases.dotComBurst.scales.x(storyContent.annotations[0].position.x),
+        chart.phases.dotComBurst.scales.y(storyContent.annotations[0].position.y),
         410,
-        annotationText,
+        storyContent.annotations[0].textLines,
         "bottomright")
-        .attr("id", "chart-annotation-s1a1")
+        .attr("id", "chart-annotation-0")
         .attr("opacity", "0.0");
 
-    let annotationText2 = [
-        "After the dot-com bubble",
-        "burst, the S&P 500 fell to a",
-        "low of around $800; nearly",
-        "half of its peak value."
-    ];
-
-    const annotationS1A2 = createAnnotation(chartAnnotationsGroup,
-        chart.phases.dotComBurst.scales.x(new Date("2002-09-28")),
-        chart.phases.dotComBurst.scales.y(800.58),
+    const annotation1 = createAnnotation(chartAnnotationsGroup,
+        chart.phases.dotComBurst.scales.x(storyContent.annotations[1].position.x),
+        chart.phases.dotComBurst.scales.y(storyContent.annotations[1].position.y),
         400,
-        annotationText2,
+        storyContent.annotations[1].textLines,
         "topleft")
-        .attr("id", "chart-annotation-s1a2")
+        .attr("id", "chart-annotation-1")
         .attr("opacity", "0.0");
 
     // Perform the chart's entrance transition
@@ -486,8 +471,8 @@ function renderScene2Canvas() {
     delayTime += pathEntranceTransitionTime;
 
     // Perform the annotations' entrance transitions
-    performAnnotationEntranceTransition(annotationS1A1, annotationEntranceTransitionTime, delayTime);
-    performAnnotationEntranceTransition(annotationS1A2, annotationEntranceTransitionTime, delayTime);
+    performAnnotationEntranceTransition(annotation0, annotationEntranceTransitionTime, delayTime);
+    performAnnotationEntranceTransition(annotation1, annotationEntranceTransitionTime, delayTime);
 
 }
 
@@ -523,7 +508,7 @@ function renderScene3Canvas() {
     const chartTitleGroup = chart.selection.select("#chart-title-group");
 
     chartTitleGroup.selectAll("text")
-        .datum("S&P 500 (SPX) January 2000 - June 2007")
+        .datum("S&P 500 (SPX) January 2000 - Early July 2007")
         .text(d => d);
 
     // Create the x scale
@@ -560,18 +545,18 @@ function renderScene3Canvas() {
     let delayTime = chartTransitionTime;
 
     // Perform the annotation position shift transition
-    performAnnotationReposition(chart.selection.select("#chart-annotation-s1a1"),
-        chart.phases.dotComBurst.scales.x(new Date("2000-03-18")),
-        chart.phases.dotComBurst.scales.y(1527.46),
-        chart.phases.growthPeriod2000s.scales.x(new Date("2000-03-18")),
-        chart.phases.growthPeriod2000s.scales.y(1527.46),
+    performAnnotationReposition(chart.selection.select("#chart-annotation-0"),
+        chart.phases.dotComBurst.scales.x(storyContent.annotations[0].position.x),
+        chart.phases.dotComBurst.scales.y(storyContent.annotations[0].position.y),
+        chart.phases.growthPeriod2000s.scales.x(storyContent.annotations[0].position.x),
+        chart.phases.growthPeriod2000s.scales.y(storyContent.annotations[0].position.y),
         chartTransitionTime);
 
-    performAnnotationReposition(chart.selection.select("#chart-annotation-s1a2"),
-        chart.phases.dotComBurst.scales.x(new Date("2002-09-28")),
-        chart.phases.dotComBurst.scales.y(800.58),
-        chart.phases.growthPeriod2000s.scales.x(new Date("2002-09-28")),
-        chart.phases.growthPeriod2000s.scales.y(800.58),
+    performAnnotationReposition(chart.selection.select("#chart-annotation-1"),
+        chart.phases.dotComBurst.scales.x(storyContent.annotations[1].position.x),
+        chart.phases.dotComBurst.scales.y(storyContent.annotations[1].position.y),
+        chart.phases.growthPeriod2000s.scales.x(storyContent.annotations[1].position.x),
+        chart.phases.growthPeriod2000s.scales.y(storyContent.annotations[1].position.y),
         chartTransitionTime);
 
     // Create the extended path
@@ -581,8 +566,21 @@ function renderScene3Canvas() {
     pathValueSPX.attr("stroke-dashoffset", pathValueSPXLength)
         .attr("stroke-dasharray", pathValueSPXLength);
     
+    // Create the annotation
+    const annotation2 = createAnnotation(chart.selection.select("#chart-annotations-group"),
+        chart.phases.growthPeriod2000s.scales.x(storyContent.annotations[2].position.x),
+        chart.phases.growthPeriod2000s.scales.y(storyContent.annotations[2].position.y),
+        410,
+        storyContent.annotations[2].textLines,
+        "bottomleft")
+        .attr("id", "chart-annotation-2")
+        .attr("opacity", "0.0");
+
     // Perform the extended line's entrance transition
     performPathEntranceTransition(pathValueSPX, pathEntranceTransitionTime, delayTime);
+    delayTime += pathEntranceTransitionTime;
+
+    performAnnotationEntranceTransition(annotation2, annotationEntranceTransitionTime, delayTime);
 }
 
 // Load scene 4
@@ -903,7 +901,7 @@ function createAnnotation(containerSelection, x, y, offsetY, textLines, position
     // Determine inversions based upon the direction; default is "bottomright"
     const width = 180;
     const textHeight = 17;
-    const textIndent = 3;
+    const textIndent = 2;
     const markRadius = 5;
 
     let textOffsetX = textIndent;
