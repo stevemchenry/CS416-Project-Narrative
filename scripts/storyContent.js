@@ -6,28 +6,28 @@ export const scenes = [
     {
         title : "Meet the New Generation of Retail Investors",
         body : [
-            "In recent years, the U.S. equity market has seen a slew of new retail (personal, non-professional) investors enter the market in numbers not seen in over two decades.",
-            "After having witnessed many sectors of the market generate explosive returns, and having received thousands of dollars in \"free\" money from multiple stimulus packages, it's not difficult to see the market's attraction to new investors.",
-            "Perhaps also unsurprising are retail investors' choices: the companies and funds offering the greatest returns. This chart shows retail investors' top ten stock picks in the early months of 2023. All are universal household names such as Tesla, Amazon, Apple, and Google (or ETFs containing a collection of these names); these are names with which novice investors are already familiar. Within the opening months of 2023, retail investors had already poured over $23 billion into these equities. Hovering a wedge in the chart provides a <span style=\"font-weight:bold; color:#fa0; text-shadow:1px 1px 2px #eee;\">tooltip</span> summary of that equity's representation.",
+            "In recent years, the U.S. equity market has seen a slew of new retail (personal, non-professional) investors enter in numbers not seen in over two decades.",
+            "After having witnessed many sectors of the market generate explosive returns over the past few years, and having received thousands of dollars of \"free\" money from multiple stimulus packages, it's not difficult to see the market's attraction to new investors.",
+            "Also unsurprising are retail investors' choices: the companies and funds offering the greatest returns. This chart shows retail investors' top ten stock picks in the early months of 2023. All are universal household names such as Tesla, Amazon, Apple, and Google (or ETFs containing a collection of these names); these are names with which novice investors are already familiar outside of the market contex. Within the opening months of 2023, retail investors had already poured over $23 billion into these equities. Hovering a wedge in the chart provides a <span style=\"font-weight:bold; color:#fa0; text-shadow:1px 1px 2px #eee;\">tooltip</span> summary of that equity's proportion.",
             "With these new investors having experienced only a period of strong growth and healthy returns begs the question: <span style=\"font-weight:bold; font-style:italic;\">are these new investors prepared to weather the next inevitable market downturn?</span>"
         ]
     },
     {
         title: "2000-2002: The Burst of the Dot-com Bubble",
         body : [
-            "The late 1990s saw the previous largest market entry of retail investors during a period now called the \"dot-com bubble\". A wide swath of technology stocks experienced extreme speculative overvaluation spurred by the introduction and explosive growth of the Internet just a few years prior.",
-            "Novice investors flocked to stocks which seemed to be increasing in with no end in sight. Many naively overinvested in overvalued stocks, and when the bubble burst in late 2000, a panicked sell-off ensued, lasting two years. This brought the value of the S&P 500 index, typically seen as the general U.S. market indicator, to nearly half of its 2000 peak as seen in the chart. Many investors, and indeed retail investors, experienced financial hardships as a result.",
+            "The previous largest market entry of retail investors in the late 1990s during a period now called the \"dot-com bubble\". A wide swath of technology stocks experienced extreme speculative overvaluation spurred by the introduction and explosive growth of the Internet just a few years prior.",
+            "Novice investors flocked to stocks which seemed to be increasing in with no end in sight. Many naively overinvested in overvalued stocks, and when the bubble burst in late 2000, a panicked sell-off ensued, lasting two years. This brought the value of the S&P 500 index, typically seen as the general U.S. market indicator, to nearly half of its 2000 peak, as seen in the chart. Many investors, and indeed retail investors, experienced financial hardships as a result.",
             "Today's market climate seems to have some echoes of the dot-com bubble. Retail investors are flocking to primarily technology stocks whose values are currently soaring in a flurry of excitement around the prospects of artificial intelligence.",
-            "However, investors should be careful to not to panic and cut all of their losses by fully exiting the market in the event of a downturn as many did during the dot-com burst..."
+            "However, investors should be careful to not to panic and cut all of their losses by fully exiting the market in the event of a downturn as many did during the dot-com burst, because as history now shows..."
         ]
     },
     {
         title: "2002-2007: A Return to Steady Growth",
         body : [
-            "The dot-com burst, though significant, was not the end of the market. And although some stocks failed, the market moved on and returned to an overall steady, upward trajectory over the next five years.",
-            "As can be seen, to panic and exit the market during the downturn is a poor decision for two main primary reasons. First, any stocks that an investor purchased during the bubble period would have been sold at a loss. Second, investors would miss out on a growing market, and would have to buy back into the market at a higher price, also having foregone potential recovered losses from stocks sold during the downturn.",
-            "In the expanded S&P 500 chart, we now see a fuller perspective of the market over a longer period of time. Even though the market took a big hit, it was able to recover overall. The recovery took a number of years, however, and demonstrates the necessity in adopting a long-term growth strategy for a stronger portfolio rather than buying into greed and fear with a short-term perspective.",
-            "Unfortunately, many of the novice dot-com retail investors were swept up in the short-term perspective and, ignoring the long-term perspective, panic sold their positions for heavy losses."
+            "The dot-com burst, though impactful, was not the end of the market. And although some stocks failed, the market moved on and returned to an overall steady, upward trajectory over the next five years.",
+            "As can be seen in the chart, to panic and exit the market during the downturn was a poor decision for two main primary reasons. First, any stocks that an investor purchased during the bubble period would have been sold at a loss. Second, investors would miss out on a growing market, and would have to buy back into the market at a higher price, also having foregone potential recovered losses from stocks sold during the downturn.",
+            "In the expanded S&P 500 chart, we now see a fuller perspective of the market over a longer period of time. Even though the market took a big hit, it was able to recover overall. The recovery took a number of years, however, and demonstrates this the necessity in adopting a long-term growth strategy rather than buying into fear and greed with a short-term perspective in order to develop a healthy portfolio.",
+            "Unfortunately, many of the novice dot-com retail investors were swept up in the short-term perspective and, ignoring the long-term perspective, panic-sold their positions for heavy losses."
         ]
     },
     {
@@ -41,16 +41,16 @@ export const scenes = [
     {
         title : "2009-2023: The Rest of the Story",
         body : [
-            "The chart, now exapanded to the present-day (at the time of creation), shows in dramatic fashion that the correct decision is to stay in the market for the long-term, prepared to whether the periodic short-term downturns which will come and pass. The market  growth of the past 14 years completely dwarfs the market of the 2000s which appeared much more dramatic when viewed in isolation. Clearly, a long-term perspective is key to market success.",
-            "That's not to say the last 14 years have all been smooth sailing by any means. The market has recently been battle-tested in just about every way: from political upheaval to a once-in-a-centry global pandemic. After each of them, however, the world, and the market, continued to move forward.",
-            "To answer our original question, \"are these new investors prepared to weather the next inevitable market downturn?\" Yes, if they maintain a long-term perspective and don't give into the fear of short-term downturns or greed of hyped market bubbles.",
-            "Next, we'll conclude up by taking a look at the historical performance of today's retail investors' top picks."
+            "The chart, now exapanded to the present-day (at the time of creation), shows in dramatic fashion that the correct decision is to stay in the market for the long-term, prepared to whether the periodic short-term downturns which will come and pass. The market  growth of the past 14 years completely dwarfs the market of the 2000s whose swings appeared much more dramatic when viewed in isolation. Clearly, a long-term perspective is key to market success.",
+            "That's not to say the last 14 years have all been smooth sailing by any means. The market has recently been battle-tested in just about every way; perhaps most notably by a once-in-a-centry global pandemic. After each downturn, however, the world, and the market, continued to move forward in growth.",
+            "To answer our original question, \"are these new investors prepared to weather the next inevitable market downturn?\" <span style=\"font-weight:bold; font-style:italic;\">Yes, if they maintain a focused, long-term perspective and don't give into the fear of short-term downturns or greed of hyped market bubbles.</span>",
+            "With this in mind, how promising do these new investors' top ten picks which we saw earlier look from a fuller historical perspective?"
         ]
     },
     {
         title : "Predicting the Future with Past Trends",
         body : [
-            "At the beginning of the presentation, we looked at today's retail investors' top 10 stock picks of early 2023. Now, we'll look at how these stocks have fared historically against the S&P 500 since the year 2000 (or their listing date). Given historical trends, do you think they look to be good long-term picks, or just hot short-term picks? You're in the driver's seat now. Use the controls below to control the chart."
+            "Let's take a look at how all ten of these favored stocks look historically. They've been added to the chart alongside the S&P 500 beginning in the year 2000 (or since their listing date, if later). Have they been consistent earners? Have they been volitile and unpredictable? Would you confidently include them in your portfolio? You are in control of the chart now; use the controls below to manipulate the chart and explore the data for yourself. We'll start by changing the value axis to a logarithmic scale to view the whole dataset more easily."
         ]
     }
 ]
