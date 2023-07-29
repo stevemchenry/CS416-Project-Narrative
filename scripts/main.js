@@ -1108,7 +1108,7 @@ function renderScene6Canvas() {
     chart.phases.exploration.scales.x = chart.phases.postGreatRecession.scales.x;
 
     // Create the y scale
-    chart.phases.exploration.scales.y = d3.scaleSymlog() //d3.scaleLinear()
+    chart.phases.exploration.scales.y = d3.scaleSymlog()
         .domain(getExtentYAxis(chart.explorationGraph.datasets, chart.explorationGraph.active))
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
@@ -1202,7 +1202,7 @@ function renderScene6Canvas() {
         .text("Value Scale Function")
         .classed("story-control-group-header", true);
 
-    createStockValueScaleFControl(storyContainerSelection);
+    createStockValueScaleFControl(storyContainerSelection, chart);
 }
 
 // Calculate the center point of a chart's x axis
@@ -1703,7 +1703,10 @@ function createStockValueScaleFControl(storyContainerSelection, chart) {
         .attr("type", "radio")
         .attr("name", "vfscale")
         .attr("id", "control-scale-linear")
-        .attr("value", "linear");
+        .attr("value", "linear")
+        .on("change", e => {
+            performStockValueScaleChange(chart, "linear");
+        });
 
     linearContainer.append("label")
         .text("Linear")
@@ -1716,11 +1719,51 @@ function createStockValueScaleFControl(storyContainerSelection, chart) {
         .attr("name", "vfscale")
         .attr("id", "control-scale-log")
         .attr("value", "log")
-        .attr("checked", true);
+        .attr("checked", true)
+        .on("change", e => {
+            performStockValueScaleChange(chart, "log");
+        });
 
     logContainer.append("label")
         .text("Logarithmic")
         .attr("for", "control-scale-log");
+}
+
+// function
+function performStockValueScaleChange(chart, scaleFunction) {
+    const scalesBegin = {...chart.phases.exploration.scales};
+
+    // Set the scale function
+    if(scaleFunction === "log") {
+        // Log
+        chart.explorationGraph.vfscale = "log";
+        chart.phases.exploration.scales.y = d3.scaleSymlog()
+            .domain(chart.phases.exploration.scales.y.domain())
+            .range(chart.phases.exploration.scales.y.range());
+
+    } else {
+        // Linear
+        chart.explorationGraph.vfscale = "linear";
+        chart.phases.exploration.scales.y = d3.scaleLinear()
+            .domain(chart.phases.exploration.scales.y.domain())
+            .range(chart.phases.exploration.scales.y.range());
+    }
+
+    // Get the data subsets and apply them to the graph
+    const keys = Object.keys(chart.explorationGraph.datasets);
+
+    // Snap-draw the new data subset lines
+    for(let i = 0; i < keys.length; ++i) {
+        let key = keys[i];
+        
+        performPathRescalingTransition(chart.selection.select(`#chart-graph-line-${key}`),
+            chart.explorationGraph.datasets[key],
+            scalesBegin,
+            chart.phases.exploration.scales,
+            chartTransitionTime);
+    }
+
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.exploration.scales.y, chartTransitionTime, 0);
 }
 
 // Get the y axis min and max from the given parameters
