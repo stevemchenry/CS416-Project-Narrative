@@ -91,6 +91,19 @@ function init() {
                 msft : true,
                 spx : true,
             },
+            datasets : {
+                tsla : null,
+                spy : null,
+                amzn : null,
+                aapl : null,
+                nvda : null,
+                qqq : null,
+                googl : null,
+                amd : null,
+                meta : null,
+                msft : null,
+                spx : null,
+            },
             display : "percent",
             range : {
                 begin : new Date("2000-01-01"),
@@ -1080,6 +1093,14 @@ function renderScene6Canvas() {
     // Declare the chart and its attributes
     const chart = charts.line;
 
+    // Set the current exploration datasets to the original datasets
+    const keys = Object.keys(chart.explorationGraph.datasets);
+
+    for(let i = 0; i < keys.length; ++i) {
+        const key = keys[i];
+        chart.explorationGraph.datasets[key] = datasets.historical[key];
+    }
+
     // Create the exploration scales
     chart.phases.exploration.scales = {};
 
@@ -1088,7 +1109,7 @@ function renderScene6Canvas() {
 
     // Create the y scale
     chart.phases.exploration.scales.y = d3.scaleLinear()
-        .domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active))
+        .domain(getExtentYAxis(chart.explorationGraph.datasets, chart.explorationGraph.active))
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
     // Update the chart title
@@ -1126,33 +1147,33 @@ function renderScene6Canvas() {
     // Update the tooltip hitbox
     chart.selection.select("#chart-graph-tooltip-hitbox-group")
     .selectAll("rect")
-    .on("mouseover", e => createStockChartExplorationTooltip(e, chart, datasets.historical, chart.explorationGraph.active))
+    .on("mouseover", e => createStockChartExplorationTooltip(e, chart, chart.explorationGraph.datasets, chart.explorationGraph.active))
     .on("mouseout", () => {
         // Remove the tooltip and vertical rule
         removeTooltip(chart.tooltip.selection);
         removeLinearRule(chart.linearRule.selection);
     })
-    .on("mousemove", e => moveStockChartExplorationTooltip(e, chart, datasets.historical, chart.explorationGraph.active));    
+    .on("mousemove", e => moveStockChartExplorationTooltip(e, chart, chart.explorationGraph.datasets, chart.explorationGraph.active));    
 
     // Snap re-draw the SPX graph as a single path
-    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx", datasets.historical.spx, chart.phases.postGreatRecession.scales, "steelblue");
+    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx", chart.explorationGraph.datasets.spx, chart.phases.postGreatRecession.scales, "steelblue");
     
     performPathRescalingTransition(pathValueSPX,
-        datasets.historical.spx,
+        chart.explorationGraph.datasets.spx,
         chart.phases.postGreatRecession.scales,
         chart.phases.exploration.scales,
         chartTransitionTime);
     
-    const pathValueTSLA = createPath(chartGraphGroup, "chart-graph-line-tsla", datasets.historical.tsla, chart.phases.exploration.scales, color(0));
-    const pathValueSPY = createPath(chartGraphGroup, "chart-graph-line-spy", datasets.historical.spy, chart.phases.exploration.scales, color(1));
-    const pathValueAMZN = createPath(chartGraphGroup, "chart-graph-line-amzn", datasets.historical.amzn, chart.phases.exploration.scales, color(2));
-    const pathValueAAPL = createPath(chartGraphGroup, "chart-graph-line-aapl", datasets.historical.aapl, chart.phases.exploration.scales, color(3));
-    const pathValueNVDA = createPath(chartGraphGroup, "chart-graph-line-nvda", datasets.historical.nvda, chart.phases.exploration.scales, color(4));
-    const pathValueQQQ = createPath(chartGraphGroup, "chart-graph-line-qqq", datasets.historical.qqq, chart.phases.exploration.scales, color(5));
-    const pathValueGOOGL = createPath(chartGraphGroup, "chart-graph-line-googl", datasets.historical.googl, chart.phases.exploration.scales, color(6));
-    const pathValueAMD = createPath(chartGraphGroup, "chart-graph-line-amd", datasets.historical.amd, chart.phases.exploration.scales, color(7));
-    const pathValueMETA = createPath(chartGraphGroup, "chart-graph-line-meta", datasets.historical.meta, chart.phases.exploration.scales, color(8));
-    const pathValueMSFT = createPath(chartGraphGroup, "chart-graph-line-msft", datasets.historical.msft, chart.phases.exploration.scales, color(9));
+    const pathValueTSLA = createPath(chartGraphGroup, "chart-graph-line-tsla", chart.explorationGraph.datasets.tsla, chart.phases.exploration.scales, color(0));
+    const pathValueSPY = createPath(chartGraphGroup, "chart-graph-line-spy", chart.explorationGraph.datasets.spy, chart.phases.exploration.scales, color(1));
+    const pathValueAMZN = createPath(chartGraphGroup, "chart-graph-line-amzn", chart.explorationGraph.datasets.amzn, chart.phases.exploration.scales, color(2));
+    const pathValueAAPL = createPath(chartGraphGroup, "chart-graph-line-aapl", chart.explorationGraph.datasets.aapl, chart.phases.exploration.scales, color(3));
+    const pathValueNVDA = createPath(chartGraphGroup, "chart-graph-line-nvda", chart.explorationGraph.datasets.nvda, chart.phases.exploration.scales, color(4));
+    const pathValueQQQ = createPath(chartGraphGroup, "chart-graph-line-qqq", chart.explorationGraph.datasets.qqq, chart.phases.exploration.scales, color(5));
+    const pathValueGOOGL = createPath(chartGraphGroup, "chart-graph-line-googl", chart.explorationGraph.datasets.googl, chart.phases.exploration.scales, color(6));
+    const pathValueAMD = createPath(chartGraphGroup, "chart-graph-line-amd", chart.explorationGraph.datasets.amd, chart.phases.exploration.scales, color(7));
+    const pathValueMETA = createPath(chartGraphGroup, "chart-graph-line-meta", chart.explorationGraph.datasets.meta, chart.phases.exploration.scales, color(8));
+    const pathValueMSFT = createPath(chartGraphGroup, "chart-graph-line-msft", chart.explorationGraph.datasets.msft, chart.phases.exploration.scales, color(9));
 
     // Add the controls to the story frame
     const storyContainerSelection = d3.select(storyContainer).append("p").append("form");
@@ -1164,17 +1185,17 @@ function renderScene6Canvas() {
 
     let i = 0;
     for(let equity of datasets.popularRetailEquitiesEarly2023) {
-        createStockLineControl(storyContainerSelection, chart, datasets.historical, equity, color(i++));
+        createStockLineControl(storyContainerSelection, chart, chart.explorationGraph.datasets, equity, color(i++));
     }
 
-    createStockLineControl(storyContainerSelection, chart, datasets.historical, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
+    createStockLineControl(storyContainerSelection, chart, chart.explorationGraph.datasets, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
 
     // Add date range controls
     storyContainerSelection.append("div")
         .text("Date Range")
         .classed("story-control-group-header", true);
 
-    createStockDateRangeControl(storyContainerSelection);
+    createStockDateRangeControl(storyContainerSelection, chart);
 }
 
 // Calculate the center point of a chart's x axis
@@ -1583,7 +1604,7 @@ function createStockLineControl(storyContainerSelection, chart, datasets, equity
 }
 
 // Create date range controls
-function createStockDateRangeControl(storyContainerSelection) {
+function createStockDateRangeControl(storyContainerSelection, chart) {
     const yearBegin = 2000;
     const yearEnd = 2023;
     const controlContainer = storyContainerSelection.append("div");
@@ -1609,13 +1630,62 @@ function createStockDateRangeControl(storyContainerSelection) {
 
     for(let year = (yearBegin + 1); year <= yearEnd; ++year) {
         const option = selectEnd.append("option")
-            .attr("value", (year != yearEnd) ? `${year}-01-01` : `${year}-07-01`)
+            .attr("value", (year != yearEnd) ? `${year}-12-31` : `${year}-07-01`)
             .text((year != yearEnd) ? year : `${year} (to July)`);
 
         if(year == yearEnd) {
             option.attr("selected", true);
         }
     }
+
+    controlContainer.append("text")
+        .text(" ");
+
+    controlContainer.append("input")
+        .attr("type", "button")
+        .attr("value", "Apply")
+        .on("click", () => {
+            const dateBegin = new Date(document.getElementById("control-date-begin").value);
+            const dateEnd = new Date(document.getElementById("control-date-end").value);
+
+            if(dateBegin > dateEnd) {
+                alert("Beginning date must come before ending date.");
+                return;
+            }
+
+            // Calculate the new x-axis from the time selection
+            chart.phases.exploration.scales.x = d3.scaleTime()
+                .domain([dateBegin, dateEnd])
+                .range([chart.marginLeft, (chart.width - chart.marginRight)]);
+
+            // Get the data subsets and apply them to the graph
+            const keys = Object.keys(chart.explorationGraph.datasets);
+
+            for(let i = 0; i < keys.length; ++i) {
+                let key = keys[i];
+                chart.explorationGraph.datasets[key] = datasets.historical[key].filter(d => ((dateParser(d.Date) >= dateBegin) && (dateParser(d.Date) <= dateEnd)));
+            }
+
+            // Calculate the new y-axis scale from the data subset
+            chart.phases.exploration.scales.y = d3.scaleLinear()
+                .domain(getExtentYAxis(chart.explorationGraph.datasets, chart.explorationGraph.active))
+                .range([(chart.height - chart.marginBottom), chart.marginTop]);
+
+            // Snap-draw the new data subset lines
+            for(let i = 0; i < keys.length; ++i) {
+                let key = keys[i];
+                chart.selection.select(`#chart-graph-line-${key}`)
+                    .datum(chart.explorationGraph.datasets[key])
+                    .attr("d", d3.line()
+                        .x((d, i) => chart.phases.exploration.scales.x(dateParser(chart.explorationGraph.datasets[key][i].Date)))
+                        .y((d, i) => chart.phases.exploration.scales.y(parseFloat(chart.explorationGraph.datasets[key][i].Close)))
+                    );
+            }
+
+            // Perform the axis rescaling transition
+            performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.exploration.scales.x, chartTransitionTime, 0);
+            performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.exploration.scales.y, chartTransitionTime, 0);
+        });
 }
 
 // Get the y axis min and max from the given parameters
@@ -1628,9 +1698,12 @@ function getExtentYAxis(datasets, datasetsActiveState) {
         const key = keys[i];
 
         if(datasetsActiveState[key]) {
-            const result = d3.extent(datasets[key], d => parseInt(d.Close));
-            globalMin = Math.min(globalMin, result[0]);
-            globalMax = Math.max(globalMax, result[1]);
+            const result = d3.extent(datasets[key], d => parseFloat(d.Close));
+            
+            if(result[0] !== undefined) {
+                globalMin = Math.min(globalMin, result[0]);
+                globalMax = Math.max(globalMax, result[1]);
+            }
         }
     }
 
