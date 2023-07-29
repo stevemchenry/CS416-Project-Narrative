@@ -65,7 +65,8 @@ function init() {
             dotComBurst : {},
             growthPeriod2000s : {},
             greatRecession : {},
-            postGreatRecession : {}
+            postGreatRecession : {},
+            exploration : {}
         },
         tooltip : {
             selection : null
@@ -887,23 +888,42 @@ function renderScene5Canvas() {
     performAnnotationEntranceTransition(annotation6, annotationEntranceTransitionTime, delayTime);
 }
 
-
-
-
-
 // Load scene 6
 function loadScene6() {
-    // Load the required dataset if it has not yet been loaded
-    if(datasets.spxHistorical === undefined) {
-        d3.csv("./data/spx-historical.csv")
-            .then(dataset => {
-                datasets.spxHistorical = dataset;
-                renderScene5Canvas();
-            });
-    
-    } else {
+    // Load the required datasets if they have not yet been loaded
+    const promises = [];
+
+    // SPX historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.spxHistorical === undefined) {
+            d3.csv("./data/spx-historical.csv")
+                .then(dataset => {
+                    datasets.spxHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    // AAPL historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.aaplHistorical === undefined) {
+            d3.csv("./data/aapl-historical.csv")
+                .then(dataset => {
+                    datasets.aaplHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    Promise.all(promises).then(() => {
         renderScene6Canvas();
-    }
+    });
 }
 
 // Render scene 6's visualization onto the canvas
@@ -911,8 +931,16 @@ function renderScene6Canvas() {
     // Declare the chart and its attributes
     const chart = charts.line;
 
-    // Create the dataset subset
-    const dataPostGreatRecession = datasets.spxHistorical.filter(d => (dateParser(d.Date) >= chart.phases.greatRecession.dateEnd));
+    // Create the exploration scales
+    chart.phases.exploration.scales = {};
+
+    // Create the x scale
+    chart.phases.exploration.scales.x = chart.phases.postGreatRecession.scales.x;
+
+    // Create the y scale
+    chart.phases.exploration.scales.y = d3.scaleLinear()
+        .domain([0, 5000])
+        .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
     // Update the chart title
     const chartTitleGroup = chart.selection.select("#chart-title-group");
@@ -942,8 +970,22 @@ function renderScene6Canvas() {
         .style("display", "none")
         .attr("opacity", "1.0");
 
+    // Rescale the x and y axes
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.exploration.scales.x, chartTransitionTime, 0);
+    performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.exploration.scales.y, chartTransitionTime, 0);
+    
     // Snap re-draw the SPX graph as a single path
     const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx", datasets.spxHistorical, chart.phases.postGreatRecession.scales, "steelblue");
+    
+    performPathRescalingTransition(pathValueSPX,
+        datasets.spxHistorical,
+        chart.phases.postGreatRecession.scales,
+        chart.phases.exploration.scales,
+        chartTransitionTime);
+    
+    
+    const pathValueAAPL = createPath(chartGraphGroup, "chart-graph-line-aapl", datasets.aaplHistorical, chart.phases.exploration.scales, color(3));
+
 }
 
 
@@ -1030,6 +1072,7 @@ function performPathRescalingTransition(pathSelection, dataset, scalesBegin, sca
 // Perform an animated axis rescaling
 function performAxisRescalingTransition(axisSelection, axisOrientation, scaleNew, durationTime, delayTime) {
     return axisSelection
+        .interrupt()
         .transition()
         .delay(delayTime)
         .duration(durationTime)
