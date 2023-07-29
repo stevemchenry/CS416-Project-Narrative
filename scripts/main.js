@@ -1188,8 +1188,6 @@ function renderScene6Canvas() {
         createStockLineControl(storyContainerSelection, chart, chart.explorationGraph.datasets, equity, color(i++));
     }
 
-    createStockLineControl(storyContainerSelection, chart, chart.explorationGraph.datasets, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
-
     // Add date range controls
     storyContainerSelection.append("div")
         .text("Date Range")
