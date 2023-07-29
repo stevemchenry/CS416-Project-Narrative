@@ -1145,11 +1145,11 @@ function renderScene6Canvas() {
 
     // Add the controls to the story frame
     const storyContainerSelection = d3.select(storyContainer).append("p").append("form");
-    createStockLineControl(storyContainerSelection, chart, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
+    createStockLineControl(storyContainerSelection, chart, datasets.historical, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
 
     let i = 0;
     for(let equity of datasets.popularRetailEquitiesEarly2023) {
-        createStockLineControl(storyContainerSelection, chart, equity, color(i++));
+        createStockLineControl(storyContainerSelection, chart, datasets.historical, equity, color(i++));
     }
 }
 
@@ -1394,7 +1394,7 @@ function performAnnotationEntranceTransition(annotationSelection, durationTime, 
 }
 
 // Create a stock line control checkbox
-function createStockLineControl(storyContainerSelection, chart, equity, color) {
+function createStockLineControl(storyContainerSelection, chart, datasets, equity, color) {
     const tickerContainer = storyContainerSelection.append("div");
     const tickerLowerCase = equity.Ticker.toLowerCase();
 
@@ -1417,12 +1417,12 @@ function createStockLineControl(storyContainerSelection, chart, equity, color) {
                             .range(chart.phases.exploration.scales.y.range())
                 };
 
-                chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active))
+                chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets, chart.explorationGraph.active))
 
                 // Perform axis transition
                 performAxisRescalingTransition(chart.selection.select("#chart-axis-y"),
                     d3.axisLeft,
-                    chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active)),
+                    chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets, chart.explorationGraph.active)),
                     chartTransitionTime,
                     0);
 
@@ -1433,7 +1433,7 @@ function createStockLineControl(storyContainerSelection, chart, equity, color) {
                     const key = keys[i];
 
                     performPathRescalingTransition(chart.selection.select(`#chart-graph-line-${key}`),
-                        datasets.historical[key],
+                        datasets[key],
                         scalesBegin,
                         chart.phases.exploration.scales,
                         chartTransitionTime);
@@ -1452,12 +1452,12 @@ function createStockLineControl(storyContainerSelection, chart, equity, color) {
                             .range(chart.phases.exploration.scales.y.range())
                 };
 
-                chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active))
+                chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets, chart.explorationGraph.active))
 
                 // Perform axis transition
                 performAxisRescalingTransition(chart.selection.select("#chart-axis-y"),
                     d3.axisLeft,
-                    chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active)),
+                    chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets, chart.explorationGraph.active)),
                     chartTransitionTime,
                     0);
 
@@ -1468,7 +1468,7 @@ function createStockLineControl(storyContainerSelection, chart, equity, color) {
                     const key = keys[i];
 
                     performPathRescalingTransition(chart.selection.select(`#chart-graph-line-${key}`),
-                        datasets.historical[key],
+                        datasets[key],
                         scalesBegin,
                         chart.phases.exploration.scales,
                         chartTransitionTime);
