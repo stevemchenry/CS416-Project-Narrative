@@ -907,12 +907,138 @@ function loadScene6() {
         }
     }));
 
+    // TSLA historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.tslaHistorical === undefined) {
+            d3.csv("./data/tsla-historical.csv")
+                .then(dataset => {
+                    datasets.tslaHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
     // AAPL historical dataset
     promises.push(new Promise((resolve) => {
         if(datasets.aaplHistorical === undefined) {
             d3.csv("./data/aapl-historical.csv")
                 .then(dataset => {
                     datasets.aaplHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    // SPY historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.spyHistorical === undefined) {
+            d3.csv("./data/spy-historical.csv")
+                .then(dataset => {
+                    datasets.spyHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    // AMZN historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.amznHistorical === undefined) {
+            d3.csv("./data/amzn-historical.csv")
+                .then(dataset => {
+                    datasets.amznHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    // NVDA historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.nvdaHistorical === undefined) {
+            d3.csv("./data/nvda-historical.csv")
+                .then(dataset => {
+                    datasets.nvdaHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    // QQQ historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.qqqHistorical === undefined) {
+            d3.csv("./data/qqq-historical.csv")
+                .then(dataset => {
+                    datasets.qqqHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    // GOOGL historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.googlHistorical === undefined) {
+            d3.csv("./data/googl-historical.csv")
+                .then(dataset => {
+                    datasets.googlHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    // AMD historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.amdHistorical === undefined) {
+            d3.csv("./data/amd-historical.csv")
+                .then(dataset => {
+                    datasets.amdHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    // META historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.metaHistorical === undefined) {
+            d3.csv("./data/meta-historical.csv")
+                .then(dataset => {
+                    datasets.metaHistorical = dataset;
+                    resolve();
+                });
+        
+        } else {
+            resolve();
+        }
+    }));
+
+    // MSFT historical dataset
+    promises.push(new Promise((resolve) => {
+        if(datasets.msftHistorical === undefined) {
+            d3.csv("./data/msft-historical.csv")
+                .then(dataset => {
+                    datasets.msftHistorical = dataset;
                     resolve();
                 });
         
@@ -939,7 +1065,7 @@ function renderScene6Canvas() {
 
     // Create the y scale
     chart.phases.exploration.scales.y = d3.scaleLinear()
-        .domain([0, 5000])
+        .domain([0, 1000])
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
     // Update the chart title
@@ -983,9 +1109,16 @@ function renderScene6Canvas() {
         chart.phases.exploration.scales,
         chartTransitionTime);
     
-    
-    const pathValueAAPL = createPath(chartGraphGroup, "chart-graph-line-aapl", datasets.aaplHistorical, chart.phases.exploration.scales, color(3));
-
+        const pathValueTSLA = createPath(chartGraphGroup, "chart-graph-line-tsla", datasets.tslaHistorical, chart.phases.exploration.scales, color(0));
+        const pathValueSPY = createPath(chartGraphGroup, "chart-graph-line-spy", datasets.spyHistorical, chart.phases.exploration.scales, color(1));
+        const pathValueAMZN = createPath(chartGraphGroup, "chart-graph-line-amzn", datasets.amznHistorical, chart.phases.exploration.scales, color(2));
+        const pathValueAAPL = createPath(chartGraphGroup, "chart-graph-line-aapl", datasets.aaplHistorical, chart.phases.exploration.scales, color(3));
+        const pathValueNVDA = createPath(chartGraphGroup, "chart-graph-line-nvda", datasets.nvdaHistorical, chart.phases.exploration.scales, color(4));
+        const pathValueQQQ = createPath(chartGraphGroup, "chart-graph-line-qqq", datasets.qqqHistorical, chart.phases.exploration.scales, color(5));
+        const pathValueGOOGL = createPath(chartGraphGroup, "chart-graph-line-googl", datasets.googlHistorical, chart.phases.exploration.scales, color(6));
+        const pathValueAMD = createPath(chartGraphGroup, "chart-graph-line-amd", datasets.amdHistorical, chart.phases.exploration.scales, color(7));
+        const pathValueMETA = createPath(chartGraphGroup, "chart-graph-line-meta", datasets.metaHistorical, chart.phases.exploration.scales, color(8));
+        const pathValueMSFT = createPath(chartGraphGroup, "chart-graph-line-msft", datasets.msftHistorical, chart.phases.exploration.scales, color(9));
 }
 
 
