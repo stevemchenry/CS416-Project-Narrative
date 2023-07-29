@@ -104,7 +104,7 @@ function init() {
                 msft : null,
                 spx : null,
             },
-            display : "percent",
+            vfscale : "log",
             range : {
                 begin : new Date("2000-01-01"),
                 end : new Date("2023-07-01")
@@ -1108,7 +1108,7 @@ function renderScene6Canvas() {
     chart.phases.exploration.scales.x = chart.phases.postGreatRecession.scales.x;
 
     // Create the y scale
-    chart.phases.exploration.scales.y = d3.scaleLinear()
+    chart.phases.exploration.scales.y = d3.scaleSymlog() //d3.scaleLinear()
         .domain(getExtentYAxis(chart.explorationGraph.datasets, chart.explorationGraph.active))
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
@@ -1196,6 +1196,13 @@ function renderScene6Canvas() {
         .classed("story-control-group-header", true);
 
     createStockDateRangeControl(storyContainerSelection, chart);
+
+    // Add value scale function controls
+    storyContainerSelection.append("div")
+        .text("Value Scale Function")
+        .classed("story-control-group-header", true);
+
+    createStockValueScaleFControl(storyContainerSelection);
 }
 
 // Calculate the center point of a chart's x axis
@@ -1686,6 +1693,34 @@ function createStockDateRangeControl(storyContainerSelection, chart) {
             performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.exploration.scales.x, chartTransitionTime, 0);
             performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.exploration.scales.y, chartTransitionTime, 0);
         });
+}
+
+// Create value scale function controls
+function createStockValueScaleFControl(storyContainerSelection, chart) {
+    const linearContainer = storyContainerSelection.append("div");
+    
+    linearContainer.append("input")
+        .attr("type", "radio")
+        .attr("name", "vfscale")
+        .attr("id", "control-scale-linear")
+        .attr("value", "linear");
+
+    linearContainer.append("label")
+        .text("Linear")
+        .attr("for", "control-scale-linear");
+
+    const logContainer = storyContainerSelection.append("div");
+    
+    logContainer.append("input")
+        .attr("type", "radio")
+        .attr("name", "vfscale")
+        .attr("id", "control-scale-log")
+        .attr("value", "log")
+        .attr("checked", true);
+
+    logContainer.append("label")
+        .text("Logarithmic")
+        .attr("for", "control-scale-log");
 }
 
 // Get the y axis min and max from the given parameters
