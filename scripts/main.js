@@ -36,6 +36,9 @@ function init() {
     scene.viewed = storyContent.scenes.map(a => false);
     scene.loader = [null, loadScene1, loadScene2, loadScene3, loadScene4, loadScene5, loadScene6];
 
+    // Create the historical dataset group
+    datasets.historical = {};
+
     // Create the chart specifications
     charts.pie = {
         selection : null,
@@ -73,6 +76,26 @@ function init() {
         },
         linearRule : {
             selection : null
+        },
+        explorationGraph : {
+            active : {
+                tsla : true,
+                spy : true,
+                amzn : true,
+                aapl : true,
+                nvda : true,
+                qqq : true,
+                googl : true,
+                amd : true,
+                meta : true,
+                msft : true,
+                spx : true,
+            },
+            display : "percent",
+            range : {
+                begin : new Date("2000-01-01"),
+                end : new Date("2023-07-01")
+            }
         }
     }
 
@@ -325,10 +348,10 @@ function renderScene1Canvas() {
 // Load scene 2
 function loadScene2() {
     // Load the required dataset if it has not yet been loaded
-    if(datasets.spxHistorical === undefined) {
+    if(datasets.historical.spx === undefined) {
         d3.csv("./data/spx-historical.csv")
             .then(dataset => {
-                datasets.spxHistorical = dataset;
+                datasets.historical.spx = dataset;
                 renderScene2Canvas();
             });
     
@@ -344,7 +367,7 @@ function renderScene2Canvas() {
 
     // Create the dataset subset
     chart.phases.dotComBurst.dateEnd = new Date("2002-09-28");
-    chart.phases.dotComBurst.dataSubset = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.dotComBurst.dateEnd));
+    chart.phases.dotComBurst.dataSubset = datasets.historical.spx.filter(d => (dateParser(d.Date) <= chart.phases.dotComBurst.dateEnd));
     const dataDotComBurst = chart.phases.dotComBurst.dataSubset;
 
     // Clear the canvas
@@ -480,10 +503,10 @@ function renderScene2Canvas() {
 // Load scene 3
 function loadScene3() {
     // Load the required dataset if it has not yet been loaded
-    if(datasets.spxHistorical === undefined) {
+    if(datasets.historical.spx === undefined) {
         d3.csv("./data/spx-historical.csv")
             .then(dataset => {
-                datasets.spxHistorical = dataset;
+                datasets.historical.spx = dataset;
                 renderScene3Canvas();
             });
     
@@ -499,8 +522,8 @@ function renderScene3Canvas() {
 
     // Create the dataset subset
     chart.phases.growthPeriod2000s.dateEnd = new Date("2007-10-06");
-    chart.phases.growthPeriod2000s.dataSubset = datasets.spxHistorical.filter(d => ((dateParser(d.Date) >= chart.phases.dotComBurst.dateEnd) && (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd)));
-    const dataSubsetCurrentRange = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd));
+    chart.phases.growthPeriod2000s.dataSubset = datasets.historical.spx.filter(d => ((dateParser(d.Date) >= chart.phases.dotComBurst.dateEnd) && (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd)));
+    const dataSubsetCurrentRange = datasets.historical.spx.filter(d => (dateParser(d.Date) <= chart.phases.growthPeriod2000s.dateEnd));
 
     // Create the 2000s growth period scales
     chart.phases.growthPeriod2000s.scales = {};
@@ -588,10 +611,10 @@ function renderScene3Canvas() {
 // Load scene 4
 function loadScene4() {
     // Load the required dataset if it has not yet been loaded
-    if(datasets.spxHistorical === undefined) {
+    if(datasets.historical.spx === undefined) {
         d3.csv("./data/spx-historical.csv")
             .then(dataset => {
-                datasets.spxHistorical = dataset;
+                datasets.historical.spx = dataset;
                 renderScene4Canvas();
             });
     
@@ -607,8 +630,8 @@ function renderScene4Canvas() {
 
     // Create the dataset subset
     chart.phases.greatRecession.dateEnd = new Date("2009-02-28");
-    chart.phases.greatRecession.dataSubset = datasets.spxHistorical.filter(d => ((dateParser(d.Date) >= chart.phases.growthPeriod2000s.dateEnd) && (dateParser(d.Date) <= chart.phases.greatRecession.dateEnd)));
-    const dataSubsetCurrentRange = datasets.spxHistorical.filter(d => (dateParser(d.Date) <= chart.phases.greatRecession.dateEnd));
+    chart.phases.greatRecession.dataSubset = datasets.historical.spx.filter(d => ((dateParser(d.Date) >= chart.phases.growthPeriod2000s.dateEnd) && (dateParser(d.Date) <= chart.phases.greatRecession.dateEnd)));
+    const dataSubsetCurrentRange = datasets.historical.spx.filter(d => (dateParser(d.Date) <= chart.phases.greatRecession.dateEnd));
 
     // Create the great recession scales
     chart.phases.greatRecession.scales = {};
@@ -709,10 +732,10 @@ function renderScene4Canvas() {
 // Load scene 5
 function loadScene5() {
     // Load the required dataset if it has not yet been loaded
-    if(datasets.spxHistorical === undefined) {
+    if(datasets.historical.spx === undefined) {
         d3.csv("./data/spx-historical.csv")
             .then(dataset => {
-                datasets.spxHistorical = dataset;
+                datasets.historical.spx = dataset;
                 renderScene5Canvas();
             });
     
@@ -727,7 +750,7 @@ function renderScene5Canvas() {
     const chart = charts.line;
 
     // Create the dataset subset
-    const dataPostGreatRecession = datasets.spxHistorical.filter(d => (dateParser(d.Date) >= chart.phases.greatRecession.dateEnd));
+    const dataPostGreatRecession = datasets.historical.spx.filter(d => (dateParser(d.Date) >= chart.phases.greatRecession.dateEnd));
 
     // Create the great recession scales
     chart.phases.postGreatRecession.scales = {};
@@ -741,7 +764,7 @@ function renderScene5Canvas() {
 
     // Create the x scale
     chart.phases.postGreatRecession.scales.x = d3.scaleTime()
-        .domain(d3.extent(datasets.spxHistorical, d => dateParser(d.Date)))
+        .domain(d3.extent(datasets.historical.spx, d => dateParser(d.Date)))
         .range([chart.marginLeft, (chart.width - chart.marginRight)]);
 
     // Create the y scale (this scale differs from the previous three scenes)
@@ -838,13 +861,13 @@ function renderScene5Canvas() {
     // Update the tooltip hitbox
     chart.selection.select("#chart-graph-tooltip-hitbox-group")
         .selectAll("rect")
-        .on("mouseover", e => createStockChartSPXTooltip(e, chart, datasets.spxHistorical))
+        .on("mouseover", e => createStockChartSPXTooltip(e, chart, datasets.historical.spx))
         .on("mouseout", () => {
             // Remove the tooltip and vertical rule
             removeTooltip(chart.tooltip.selection);
             removeLinearRule(chart.linearRule.selection);
         })
-        .on("mousemove", e => moveStockChartSPXTooltip(e, chart, datasets.spxHistorical));    
+        .on("mousemove", e => moveStockChartSPXTooltip(e, chart, datasets.historical.spx));    
 
     // Perform the line compression transition
     const chartGraphGroup = chart.selection.select("#chart-graph-group");
@@ -895,10 +918,10 @@ function loadScene6() {
 
     // SPX historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.spxHistorical === undefined) {
+        if(datasets.historical.spx === undefined) {
             d3.csv("./data/spx-historical.csv")
                 .then(dataset => {
-                    datasets.spxHistorical = dataset;
+                    datasets.historical.spx = dataset;
                     resolve();
                 });
         
@@ -909,10 +932,10 @@ function loadScene6() {
 
     // TSLA historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.tslaHistorical === undefined) {
+        if(datasets.historical.tsla === undefined) {
             d3.csv("./data/tsla-historical.csv")
                 .then(dataset => {
-                    datasets.tslaHistorical = dataset;
+                    datasets.historical.tsla = dataset;
                     resolve();
                 });
         
@@ -923,10 +946,10 @@ function loadScene6() {
 
     // AAPL historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.aaplHistorical === undefined) {
+        if(datasets.historical.aapl === undefined) {
             d3.csv("./data/aapl-historical.csv")
                 .then(dataset => {
-                    datasets.aaplHistorical = dataset;
+                    datasets.historical.aapl = dataset;
                     resolve();
                 });
         
@@ -937,10 +960,10 @@ function loadScene6() {
 
     // SPY historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.spyHistorical === undefined) {
+        if(datasets.historical.spy === undefined) {
             d3.csv("./data/spy-historical.csv")
                 .then(dataset => {
-                    datasets.spyHistorical = dataset;
+                    datasets.historical.spy = dataset;
                     resolve();
                 });
         
@@ -951,10 +974,10 @@ function loadScene6() {
 
     // AMZN historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.amznHistorical === undefined) {
+        if(datasets.historical.amzn === undefined) {
             d3.csv("./data/amzn-historical.csv")
                 .then(dataset => {
-                    datasets.amznHistorical = dataset;
+                    datasets.historical.amzn = dataset;
                     resolve();
                 });
         
@@ -965,10 +988,10 @@ function loadScene6() {
 
     // NVDA historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.nvdaHistorical === undefined) {
+        if(datasets.historical.nvda === undefined) {
             d3.csv("./data/nvda-historical.csv")
                 .then(dataset => {
-                    datasets.nvdaHistorical = dataset;
+                    datasets.historical.nvda = dataset;
                     resolve();
                 });
         
@@ -979,10 +1002,10 @@ function loadScene6() {
 
     // QQQ historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.qqqHistorical === undefined) {
+        if(datasets.historical.qqq === undefined) {
             d3.csv("./data/qqq-historical.csv")
                 .then(dataset => {
-                    datasets.qqqHistorical = dataset;
+                    datasets.historical.qqq = dataset;
                     resolve();
                 });
         
@@ -993,10 +1016,10 @@ function loadScene6() {
 
     // GOOGL historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.googlHistorical === undefined) {
+        if(datasets.historical.googl === undefined) {
             d3.csv("./data/googl-historical.csv")
                 .then(dataset => {
-                    datasets.googlHistorical = dataset;
+                    datasets.historical.googl = dataset;
                     resolve();
                 });
         
@@ -1007,10 +1030,10 @@ function loadScene6() {
 
     // AMD historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.amdHistorical === undefined) {
+        if(datasets.historical.amd === undefined) {
             d3.csv("./data/amd-historical.csv")
                 .then(dataset => {
-                    datasets.amdHistorical = dataset;
+                    datasets.historical.amd = dataset;
                     resolve();
                 });
         
@@ -1021,10 +1044,10 @@ function loadScene6() {
 
     // META historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.metaHistorical === undefined) {
+        if(datasets.historical.meta === undefined) {
             d3.csv("./data/meta-historical.csv")
                 .then(dataset => {
-                    datasets.metaHistorical = dataset;
+                    datasets.historical.meta = dataset;
                     resolve();
                 });
         
@@ -1035,10 +1058,10 @@ function loadScene6() {
 
     // MSFT historical dataset
     promises.push(new Promise((resolve) => {
-        if(datasets.msftHistorical === undefined) {
+        if(datasets.historical.msft === undefined) {
             d3.csv("./data/msft-historical.csv")
                 .then(dataset => {
-                    datasets.msftHistorical = dataset;
+                    datasets.historical.msft = dataset;
                     resolve();
                 });
         
@@ -1060,12 +1083,12 @@ function renderScene6Canvas() {
     // Create the exploration scales
     chart.phases.exploration.scales = {};
 
-    // Create the x scale
+    // Create the x scale (initially, this will be the full date range of the dataset)
     chart.phases.exploration.scales.x = chart.phases.postGreatRecession.scales.x;
 
     // Create the y scale
     chart.phases.exploration.scales.y = d3.scaleLinear()
-        .domain([0, 1000])
+        .domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active))
         .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
     // Update the chart title
@@ -1101,32 +1124,32 @@ function renderScene6Canvas() {
     performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.exploration.scales.y, chartTransitionTime, 0);
     
     // Snap re-draw the SPX graph as a single path
-    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx", datasets.spxHistorical, chart.phases.postGreatRecession.scales, "steelblue");
+    const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx", datasets.historical.spx, chart.phases.postGreatRecession.scales, "steelblue");
     
     performPathRescalingTransition(pathValueSPX,
-        datasets.spxHistorical,
+        datasets.historical.spx,
         chart.phases.postGreatRecession.scales,
         chart.phases.exploration.scales,
         chartTransitionTime);
     
-        const pathValueTSLA = createPath(chartGraphGroup, "chart-graph-line-tsla", datasets.tslaHistorical, chart.phases.exploration.scales, color(0));
-        const pathValueSPY = createPath(chartGraphGroup, "chart-graph-line-spy", datasets.spyHistorical, chart.phases.exploration.scales, color(1));
-        const pathValueAMZN = createPath(chartGraphGroup, "chart-graph-line-amzn", datasets.amznHistorical, chart.phases.exploration.scales, color(2));
-        const pathValueAAPL = createPath(chartGraphGroup, "chart-graph-line-aapl", datasets.aaplHistorical, chart.phases.exploration.scales, color(3));
-        const pathValueNVDA = createPath(chartGraphGroup, "chart-graph-line-nvda", datasets.nvdaHistorical, chart.phases.exploration.scales, color(4));
-        const pathValueQQQ = createPath(chartGraphGroup, "chart-graph-line-qqq", datasets.qqqHistorical, chart.phases.exploration.scales, color(5));
-        const pathValueGOOGL = createPath(chartGraphGroup, "chart-graph-line-googl", datasets.googlHistorical, chart.phases.exploration.scales, color(6));
-        const pathValueAMD = createPath(chartGraphGroup, "chart-graph-line-amd", datasets.amdHistorical, chart.phases.exploration.scales, color(7));
-        const pathValueMETA = createPath(chartGraphGroup, "chart-graph-line-meta", datasets.metaHistorical, chart.phases.exploration.scales, color(8));
-        const pathValueMSFT = createPath(chartGraphGroup, "chart-graph-line-msft", datasets.msftHistorical, chart.phases.exploration.scales, color(9));
+    const pathValueTSLA = createPath(chartGraphGroup, "chart-graph-line-tsla", datasets.historical.tsla, chart.phases.exploration.scales, color(0));
+    const pathValueSPY = createPath(chartGraphGroup, "chart-graph-line-spy", datasets.historical.spy, chart.phases.exploration.scales, color(1));
+    const pathValueAMZN = createPath(chartGraphGroup, "chart-graph-line-amzn", datasets.historical.amzn, chart.phases.exploration.scales, color(2));
+    const pathValueAAPL = createPath(chartGraphGroup, "chart-graph-line-aapl", datasets.historical.aapl, chart.phases.exploration.scales, color(3));
+    const pathValueNVDA = createPath(chartGraphGroup, "chart-graph-line-nvda", datasets.historical.nvda, chart.phases.exploration.scales, color(4));
+    const pathValueQQQ = createPath(chartGraphGroup, "chart-graph-line-qqq", datasets.historical.qqq, chart.phases.exploration.scales, color(5));
+    const pathValueGOOGL = createPath(chartGraphGroup, "chart-graph-line-googl", datasets.historical.googl, chart.phases.exploration.scales, color(6));
+    const pathValueAMD = createPath(chartGraphGroup, "chart-graph-line-amd", datasets.historical.amd, chart.phases.exploration.scales, color(7));
+    const pathValueMETA = createPath(chartGraphGroup, "chart-graph-line-meta", datasets.historical.meta, chart.phases.exploration.scales, color(8));
+    const pathValueMSFT = createPath(chartGraphGroup, "chart-graph-line-msft", datasets.historical.msft, chart.phases.exploration.scales, color(9));
 
     // Add the controls to the story frame
     const storyContainerSelection = d3.select(storyContainer).append("p").append("form");
-    createStockLineControl(storyContainerSelection, chart.selection, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
+    createStockLineControl(storyContainerSelection, chart, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
 
     let i = 0;
     for(let equity of datasets.popularRetailEquitiesEarly2023) {
-        createStockLineControl(storyContainerSelection, chart.selection, equity, color(i++));
+        createStockLineControl(storyContainerSelection, chart, equity, color(i++));
     }
 }
 
@@ -1371,7 +1394,7 @@ function performAnnotationEntranceTransition(annotationSelection, durationTime, 
 }
 
 // Create a stock line control checkbox
-function createStockLineControl(storyContainerSelection, chartSelection, equity, color) {
+function createStockLineControl(storyContainerSelection, chart, equity, color) {
     const tickerContainer = storyContainerSelection.append("div");
     const tickerLowerCase = equity.Ticker.toLowerCase();
 
@@ -1380,12 +1403,76 @@ function createStockLineControl(storyContainerSelection, chartSelection, equity,
         .attr("id", `control-ticker-${tickerLowerCase}`)
         .attr("checked", true)
         .on("change", e => {
-            const line = chartSelection.select(`#chart-graph-line-${tickerLowerCase}`);
+            const line = chart.selection.select(`#chart-graph-line-${tickerLowerCase}`);
             if(e.target.checked) {
+                // Set the line to 1 opacity and set this ticker to active
                 line.style("opacity", "1.0");
+                chart.explorationGraph.active[tickerLowerCase] = true;
+
+                // Update the scales
+                const scalesBegin = {
+                    x : chart.phases.exploration.scales.x,
+                    y : d3.scaleLinear()
+                            .domain(chart.phases.exploration.scales.y.domain())
+                            .range(chart.phases.exploration.scales.y.range())
+                };
+
+                chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active))
+
+                // Perform axis transition
+                performAxisRescalingTransition(chart.selection.select("#chart-axis-y"),
+                    d3.axisLeft,
+                    chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active)),
+                    chartTransitionTime,
+                    0);
+
+                // Perform the lines transitions
+                const keys = Object.keys(chart.explorationGraph.active);
+
+                for(let i = 0; i < keys.length; ++i) {
+                    const key = keys[i];
+
+                    performPathRescalingTransition(chart.selection.select(`#chart-graph-line-${key}`),
+                        datasets.historical[key],
+                        scalesBegin,
+                        chart.phases.exploration.scales,
+                        chartTransitionTime);
+                }
 
             } else {
+                // Set the line to 0 opacity and set this ticker to inactive
                 line.style("opacity", "0.0");
+                chart.explorationGraph.active[tickerLowerCase] = false;
+
+                // Update the scales
+                const scalesBegin = {
+                    x : chart.phases.exploration.scales.x,
+                    y : d3.scaleLinear()
+                            .domain(chart.phases.exploration.scales.y.domain())
+                            .range(chart.phases.exploration.scales.y.range())
+                };
+
+                chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active))
+
+                // Perform axis transition
+                performAxisRescalingTransition(chart.selection.select("#chart-axis-y"),
+                    d3.axisLeft,
+                    chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets.historical, chart.explorationGraph.active)),
+                    chartTransitionTime,
+                    0);
+
+                // Perform the lines transitions
+                const keys = Object.keys(chart.explorationGraph.active);
+
+                for(let i = 0; i < keys.length; ++i) {
+                    const key = keys[i];
+
+                    performPathRescalingTransition(chart.selection.select(`#chart-graph-line-${key}`),
+                        datasets.historical[key],
+                        scalesBegin,
+                        chart.phases.exploration.scales,
+                        chartTransitionTime);
+                }
             }
         });
 
@@ -1397,4 +1484,22 @@ function createStockLineControl(storyContainerSelection, chartSelection, equity,
         .text(`${equity.CompanyName} (${equity.Ticker})`);
 
         return tickerContainer;
+}
+
+function getExtentYAxis(datasets, datasetsActiveState) {
+    let globalMin = 0;
+    let globalMax = 0;
+    const keys = Object.keys(datasets);
+
+    for(let i = 0; i < keys.length; ++i) {
+        const key = keys[i];
+
+        if(datasetsActiveState[key]) {
+            const result = d3.extent(datasets[key], d => parseInt(d.Close));
+            globalMin = Math.min(globalMin, result[0]);
+            globalMax = Math.max(globalMax, result[1]);
+        }
+    }
+
+    return [globalMin, globalMax];
 }
