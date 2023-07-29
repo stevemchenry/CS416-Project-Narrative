@@ -1122,32 +1122,11 @@ function renderScene6Canvas() {
 
     // Add the controls to the story frame
     const storyContainerSelection = d3.select(storyContainer).append("p").append("form");
+    createStockLineControl(storyContainerSelection, chart.selection, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
+
     let i = 0;
-
     for(let equity of datasets.popularRetailEquitiesEarly2023) {
-        const tickerContainer = storyContainerSelection.append("div");
-        const tickerLowerCase = equity.Ticker.toLowerCase();
-
-        tickerContainer.append("input")
-            .attr("type", "checkbox")
-            .attr("id", `control-ticker-${tickerLowerCase}`)
-            .attr("checked", true)
-            .on("change", e => {
-                const line = chart.selection.select(`#chart-graph-line-${tickerLowerCase}`);
-                if(e.target.checked) {
-                    line.style("opacity", "1.0");
-
-                } else {
-                    line.style("opacity", "0.0");
-                }
-            });
-
-        tickerContainer.append("label")
-            .attr("for", `control-ticker-${tickerLowerCase}`)
-            .style("color", color(i++))
-            .style("font-weight", "bold")
-            .style("text-shadow", "1px 1px 1px #666")
-            .text(`${equity.CompanyName} (${equity.Ticker})`);
+        createStockLineControl(storyContainerSelection, chart.selection, equity, color(i++));
     }
 }
 
@@ -1389,4 +1368,33 @@ function performAnnotationEntranceTransition(annotationSelection, durationTime, 
         .delay(delayTime)
         .duration(durationTime)
         .attr("opacity", "1.0");
+}
+
+// Create a stock line control checkbox
+function createStockLineControl(storyContainerSelection, chartSelection, equity, color) {
+    const tickerContainer = storyContainerSelection.append("div");
+    const tickerLowerCase = equity.Ticker.toLowerCase();
+
+    tickerContainer.append("input")
+        .attr("type", "checkbox")
+        .attr("id", `control-ticker-${tickerLowerCase}`)
+        .attr("checked", true)
+        .on("change", e => {
+            const line = chartSelection.select(`#chart-graph-line-${tickerLowerCase}`);
+            if(e.target.checked) {
+                line.style("opacity", "1.0");
+
+            } else {
+                line.style("opacity", "0.0");
+            }
+        });
+
+    tickerContainer.append("label")
+        .attr("for", `control-ticker-${tickerLowerCase}`)
+        .style("color", color)
+        .style("font-weight", "bold")
+        .style("text-shadow", "1px 1px 1px #666")
+        .text(`${equity.CompanyName} (${equity.Ticker})`);
+
+        return tickerContainer;
 }
