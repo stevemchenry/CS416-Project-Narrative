@@ -1156,12 +1156,25 @@ function renderScene6Canvas() {
 
     // Add the controls to the story frame
     const storyContainerSelection = d3.select(storyContainer).append("p").append("form");
-    createStockLineControl(storyContainerSelection, chart, datasets.historical, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
+
+    // Add line filter controls
+    storyContainerSelection.append("div")
+        .text("Equities")
+        .classed("story-control-group-header", true);
 
     let i = 0;
     for(let equity of datasets.popularRetailEquitiesEarly2023) {
         createStockLineControl(storyContainerSelection, chart, datasets.historical, equity, color(i++));
     }
+
+    createStockLineControl(storyContainerSelection, chart, datasets.historical, {CompanyName : "S&P 500", Ticker : "SPX"}, "steelblue");
+
+    // Add date range controls
+    storyContainerSelection.append("div")
+        .text("Date Range")
+        .classed("story-control-group-header", true);
+
+    createStockDateRangeControl(storyContainerSelection);
 }
 
 // Calculate the center point of a chart's x axis
@@ -1181,6 +1194,11 @@ function chartTitleCenter(chart) {
 
 // Calculate a deterministic, neighbor-distinct color given a position integer
 function color(i) {
+    if(i == 10) {
+        // Cheat the algorithm for our preferred SPX color
+        return "steelblue";
+    }
+
     return `hsl(${(((i * 139) + 210) % 360)}, 100%, 75%)`;
 }
 
@@ -1274,7 +1292,7 @@ function createStockChartSPXTooltip(e, chart, dataset) {
     const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - (DateSegmentWidth / 2)) / DateSegmentWidth), (dataset.length - 1)), 0);
 
     const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataset[closestXPoint].Date}</div>
-        <div><span style="font-weight:bold; color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",.2f")(dataset[closestXPoint].Close)}</div>`;
+        <div><span class="ticker" style="color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",.2f")(dataset[closestXPoint].Close)}</div>`;
     
     chart.tooltip.selection = createTooltip(tooltipContent)
         .style("left", `${e.clientX}px`)
@@ -1293,7 +1311,7 @@ function moveStockChartSPXTooltip(e, chart, dataset) {
     const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - (DateSegmentWidth / 2)) / DateSegmentWidth), (dataset.length - 1)), 0);
 
     const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataset[closestXPoint].Date}</div>
-        <div><span style="font-weight:bold; color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",.2f")(dataset[closestXPoint].Close)}</div>`;
+        <div><span class="ticker" style="color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",.2f")(dataset[closestXPoint].Close)}</div>`;
 
     chart.tooltip.selection
         .style("left", `${e.clientX}px`)
@@ -1325,7 +1343,7 @@ function createStockChartExplorationTooltip(e, chart, datasets, datasetsActiveSt
             const listingOffsetIndex = closestXPoint - (dataPointCount - datasets[key].length);
 
             if(listingOffsetIndex >= 0) {
-                tooltipContent += `<div><span style="font-weight:bold; color:${color(i)};">${datasets[key][listingOffsetIndex].Ticker}</span>: $${d3.format(",.2f")(datasets[key][listingOffsetIndex].Close)}</div>`;
+                tooltipContent += `<div><span class="ticker" style="color:${color(i)};">${datasets[key][listingOffsetIndex].Ticker}</span>: $${d3.format(",.2f")(datasets[key][listingOffsetIndex].Close)}</div>`;
             }
         }
     }
@@ -1358,7 +1376,7 @@ function moveStockChartExplorationTooltip(e, chart, datasets, datasetsActiveStat
             const listingOffsetIndex = closestXPoint - (dataPointCount - datasets[key].length);
 
             if(listingOffsetIndex >= 0) {
-                tooltipContent += `<div><span style="font-weight:bold; color:${color(i)};">${datasets[key][listingOffsetIndex].Ticker}</span>: $${d3.format(",.2f")(datasets[key][listingOffsetIndex].Close)}</div>`;
+                tooltipContent += `<div><span class="ticker" style="color:${color(i)};">${datasets[key][listingOffsetIndex].Ticker}</span>: $${d3.format(",.2f")(datasets[key][listingOffsetIndex].Close)}</div>`;
             }
         }
     }
@@ -1558,13 +1576,49 @@ function createStockLineControl(storyContainerSelection, chart, datasets, equity
     tickerContainer.append("label")
         .attr("for", `control-ticker-${tickerLowerCase}`)
         .style("color", color)
-        .style("font-weight", "bold")
-        .style("text-shadow", "1px 1px 1px #666")
+        .classed("ticker", true)
         .text(`${equity.CompanyName} (${equity.Ticker})`);
 
         return tickerContainer;
 }
 
+// Create date range controls
+function createStockDateRangeControl(storyContainerSelection) {
+    const yearBegin = 2000;
+    const yearEnd = 2023;
+    const controlContainer = storyContainerSelection.append("div");
+
+    const selectBegin = controlContainer.append("select")
+        .attr("id", "control-date-begin");
+
+    for(let year = yearBegin; year < yearEnd; ++year) {
+        const option = selectBegin.append("option")
+            .attr("value", `${year}-01-01`)
+            .text(year);
+
+        if(year == yearBegin) {
+            option.attr("selected", true);
+        }
+    }
+
+    controlContainer.append("text")
+        .text(" through ");
+
+    const selectEnd = controlContainer.append("select")
+        .attr("id", "control-date-end");
+
+    for(let year = (yearBegin + 1); year <= yearEnd; ++year) {
+        const option = selectEnd.append("option")
+            .attr("value", (year != yearEnd) ? `${year}-01-01` : `${year}-07-01`)
+            .text((year != yearEnd) ? year : `${year} (to July)`);
+
+        if(year == yearEnd) {
+            option.attr("selected", true);
+        }
+    }
+}
+
+// Get the y axis min and max from the given parameters
 function getExtentYAxis(datasets, datasetsActiveState) {
     let globalMin = 0;
     let globalMax = 0;

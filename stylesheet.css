@@ -122,6 +122,19 @@ nav > ul > li:not(:first-of-type) {
     padding-right: 10px;
 }
 
+.story-control-group-header {
+    font-weight: bold;
+    border-bottom: dotted 1px #999;
+    margin-bottom: 3px;
+    margin-top: 10px;
+    padding-bottom: 2px;
+}
+
+.ticker {
+    font-weight: bold;
+    text-shadow: 1px 1px 1px #777;
+}
+
 .tooltip {
     background-color: rgba(224, 224, 224, 0.7);
     border: solid 1px #aaa;
