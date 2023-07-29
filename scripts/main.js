@@ -1534,17 +1534,7 @@ function createStockLineControl(storyContainerSelection, chart, datasets, equity
                 line.style("opacity", "1.0");
                 chart.explorationGraph.active[tickerLowerCase] = true;
 
-                // Update the scales
-                const scalesBegin = {
-                    x : chart.phases.exploration.scales.x,
-                    y : d3.scaleLinear()
-                            .domain(chart.phases.exploration.scales.y.domain())
-                            .range(chart.phases.exploration.scales.y.range())
-                };
-
-                chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets, chart.explorationGraph.active))
-
-                // Perform axis transition
+                // Update the axis and perform axis transition
                 performAxisRescalingTransition(chart.selection.select("#chart-axis-y"),
                     d3.axisLeft,
                     chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets, chart.explorationGraph.active)),
@@ -1557,11 +1547,14 @@ function createStockLineControl(storyContainerSelection, chart, datasets, equity
                 for(let i = 0; i < keys.length; ++i) {
                     const key = keys[i];
 
-                    performPathRescalingTransition(chart.selection.select(`#chart-graph-line-${key}`),
-                        datasets[key],
-                        scalesBegin,
-                        chart.phases.exploration.scales,
-                        chartTransitionTime);
+                    chart.selection.select(`#chart-graph-line-${key}`)
+                        .transition()
+                        .duration(chartTransitionTime)
+                        .ease(d3.easeCubic)
+                        .attr("d", d3.line()
+                            .x((d, i) => chart.phases.exploration.scales.x(dateParser(chart.explorationGraph.datasets[key][i].Date)))
+                            .y((d, i) => chart.phases.exploration.scales.y(parseFloat(chart.explorationGraph.datasets[key][i].Close)))
+                        );
                 }
 
             } else {
@@ -1570,13 +1563,7 @@ function createStockLineControl(storyContainerSelection, chart, datasets, equity
                 chart.explorationGraph.active[tickerLowerCase] = false;
 
                 // Update the scales
-                const scalesBegin = {
-                    x : chart.phases.exploration.scales.x,
-                    y : d3.scaleLinear()
-                            .domain(chart.phases.exploration.scales.y.domain())
-                            .range(chart.phases.exploration.scales.y.range())
-                };
-
+                const scalesBegin = {...chart.phases.exploration.scales};
                 chart.phases.exploration.scales.y.domain(getExtentYAxis(datasets, chart.explorationGraph.active))
 
                 // Perform axis transition
@@ -1592,11 +1579,14 @@ function createStockLineControl(storyContainerSelection, chart, datasets, equity
                 for(let i = 0; i < keys.length; ++i) {
                     const key = keys[i];
 
-                    performPathRescalingTransition(chart.selection.select(`#chart-graph-line-${key}`),
-                        datasets[key],
-                        scalesBegin,
-                        chart.phases.exploration.scales,
-                        chartTransitionTime);
+                    chart.selection.select(`#chart-graph-line-${key}`)
+                        .transition()
+                        .duration(chartTransitionTime)
+                        .ease(d3.easeCubic)
+                        .attr("d", d3.line()
+                            .x((d, i) => chart.phases.exploration.scales.x(dateParser(chart.explorationGraph.datasets[key][i].Date)))
+                            .y((d, i) => chart.phases.exploration.scales.y(parseFloat(chart.explorationGraph.datasets[key][i].Close)))
+                        );
                 }
             }
         });
@@ -1674,7 +1664,7 @@ function createStockDateRangeControl(storyContainerSelection, chart) {
             }
 
             // Calculate the new y-axis scale from the data subset
-            chart.phases.exploration.scales.y = d3.scaleLinear()
+            chart.phases.exploration.scales.y
                 .domain(getExtentYAxis(chart.explorationGraph.datasets, chart.explorationGraph.active))
                 .range([(chart.height - chart.marginBottom), chart.marginTop]);
 
@@ -1729,7 +1719,7 @@ function createStockValueScaleFControl(storyContainerSelection, chart) {
         .attr("for", "control-scale-log");
 }
 
-// function
+// Perform stock value scale function change
 function performStockValueScaleChange(chart, scaleFunction) {
     const scalesBegin = {...chart.phases.exploration.scales};
 
