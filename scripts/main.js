@@ -1119,11 +1119,37 @@ function renderScene6Canvas() {
         const pathValueAMD = createPath(chartGraphGroup, "chart-graph-line-amd", datasets.amdHistorical, chart.phases.exploration.scales, color(7));
         const pathValueMETA = createPath(chartGraphGroup, "chart-graph-line-meta", datasets.metaHistorical, chart.phases.exploration.scales, color(8));
         const pathValueMSFT = createPath(chartGraphGroup, "chart-graph-line-msft", datasets.msftHistorical, chart.phases.exploration.scales, color(9));
+
+    // Add the controls to the story frame
+    const storyContainerSelection = d3.select(storyContainer).append("p").append("form");
+    let i = 0;
+
+    for(let equity of datasets.popularRetailEquitiesEarly2023) {
+        const tickerContainer = storyContainerSelection.append("div");
+        const tickerLowerCase = equity.Ticker.toLowerCase();
+
+        tickerContainer.append("input")
+            .attr("type", "checkbox")
+            .attr("id", `control-ticker-${tickerLowerCase}`)
+            .attr("checked", true)
+            .on("change", e => {
+                const line = chart.selection.select(`#chart-graph-line-${tickerLowerCase}`);
+                if(e.target.checked) {
+                    line.style("opacity", "1.0");
+
+                } else {
+                    line.style("opacity", "0.0");
+                }
+            });
+
+        tickerContainer.append("label")
+            .attr("for", `control-ticker-${tickerLowerCase}`)
+            .style("color", color(i++))
+            .style("font-weight", "bold")
+            .style("text-shadow", "1px 1px 1px #666")
+            .text(`${equity.CompanyName} (${equity.Ticker})`);
+    }
 }
-
-
-
-
 
 // Calculate the center point of a chart's x axis
 function chartAxisXCenter(chart) {
