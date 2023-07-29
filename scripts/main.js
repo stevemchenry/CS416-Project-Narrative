@@ -1123,6 +1123,17 @@ function renderScene6Canvas() {
     performAxisRescalingTransition(chart.selection.select("#chart-axis-x"), d3.axisBottom, chart.phases.exploration.scales.x, chartTransitionTime, 0);
     performAxisRescalingTransition(chart.selection.select("#chart-axis-y"), d3.axisLeft, chart.phases.exploration.scales.y, chartTransitionTime, 0);
     
+    // Update the tooltip hitbox
+    chart.selection.select("#chart-graph-tooltip-hitbox-group")
+    .selectAll("rect")
+    .on("mouseover", e => createStockChartExplorationTooltip(e, chart, datasets.historical, chart.explorationGraph.active))
+    .on("mouseout", () => {
+        // Remove the tooltip and vertical rule
+        removeTooltip(chart.tooltip.selection);
+        removeLinearRule(chart.linearRule.selection);
+    })
+    .on("mousemove", e => moveStockChartExplorationTooltip(e, chart, datasets.historical, chart.explorationGraph.active));    
+
     // Snap re-draw the SPX graph as a single path
     const pathValueSPX = createPath(chartGraphGroup, "chart-graph-line-spx", datasets.historical.spx, chart.phases.postGreatRecession.scales, "steelblue");
     
@@ -1271,7 +1282,7 @@ function createStockChartSPXTooltip(e, chart, dataset) {
 
     // Create the tooltip vertical rule
     chart.linearRule.selection = createLinearRule(chart.selection)
-        .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`)
+        .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
 }
 
 // Move the SPX stock chart tooltip to the cursor location
@@ -1284,6 +1295,74 @@ function moveStockChartSPXTooltip(e, chart, dataset) {
     const tooltipContent = `<div style="font-weight:bold;">Week ending on ${dataset[closestXPoint].Date}</div>
         <div><span style="font-weight:bold; color:steelblue;">${dataset[closestXPoint].Ticker}</span>: $${d3.format(",.2f")(dataset[closestXPoint].Close)}</div>`;
 
+    chart.tooltip.selection
+        .style("left", `${e.clientX}px`)
+        .style("top", `${100}px`)
+        .node()
+        .innerHTML = tooltipContent;
+
+    // Move the tooltip vertical rule
+    chart.linearRule.selection
+        .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
+}
+
+// Create the exploration stock chart tooltip
+function createStockChartExplorationTooltip(e, chart, datasets, datasetsActiveState) {
+    // Create the tooltip box
+    const dataPointCount = datasets["spx"].length;
+    const DateSegmentWidth = ((chart.width - chart.marginRight - chart.marginLeft) / dataPointCount);
+    const canvasPointerX = d3.pointer(e)[0];
+    const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - (DateSegmentWidth / 2)) / DateSegmentWidth), (dataPointCount - 1)), 0);
+
+    let tooltipContent = `<div style="font-weight:bold;">Week ending on ${datasets["spx"][closestXPoint].Date}</div>`
+
+    const keys = Object.keys(datasetsActiveState);
+
+    for(let i = 0; i < keys.length; ++i) {
+        const key = keys[i];
+
+        if(datasetsActiveState[key]) {
+            const listingOffsetIndex = closestXPoint - (dataPointCount - datasets[key].length);
+
+            if(listingOffsetIndex >= 0) {
+                tooltipContent += `<div><span style="font-weight:bold; color:${color(i)};">${datasets[key][listingOffsetIndex].Ticker}</span>: $${d3.format(",.2f")(datasets[key][listingOffsetIndex].Close)}</div>`;
+            }
+        }
+    }
+    
+    chart.tooltip.selection = createTooltip(tooltipContent)
+        .style("left", `${e.clientX}px`)
+        .style("top", `${100}px`);
+
+    // Create the tooltip vertical rule
+    chart.linearRule.selection = createLinearRule(chart.selection)
+        .attr("d", `M${canvasPointerX},${chart.marginTop}L${canvasPointerX},${chart.height - chart.marginTop}`);
+}
+
+// Move the exploration stock chart tooltip
+function moveStockChartExplorationTooltip(e, chart, datasets, datasetsActiveState) {
+    // Move the tooltip box
+    const dataPointCount = datasets["spx"].length;
+    const DateSegmentWidth = ((chart.width - chart.marginRight - chart.marginLeft) / dataPointCount);
+    const canvasPointerX = d3.pointer(e)[0];
+    const closestXPoint = Math.max(Math.min(Math.round((canvasPointerX - chart.marginLeft - (DateSegmentWidth / 2)) / DateSegmentWidth), (dataPointCount - 1)), 0);
+
+    let tooltipContent = `<div style="font-weight:bold;">Week ending on ${datasets["spx"][closestXPoint].Date}</div>`
+
+    const keys = Object.keys(datasetsActiveState);
+
+    for(let i = 0; i < keys.length; ++i) {
+        const key = keys[i];
+
+        if(datasetsActiveState[key]) {
+            const listingOffsetIndex = closestXPoint - (dataPointCount - datasets[key].length);
+
+            if(listingOffsetIndex >= 0) {
+                tooltipContent += `<div><span style="font-weight:bold; color:${color(i)};">${datasets[key][listingOffsetIndex].Ticker}</span>: $${d3.format(",.2f")(datasets[key][listingOffsetIndex].Close)}</div>`;
+            }
+        }
+    }
+    
     chart.tooltip.selection
         .style("left", `${e.clientX}px`)
         .style("top", `${100}px`)
