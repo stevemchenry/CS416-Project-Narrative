@@ -8,7 +8,7 @@ export const scenes = [
         body : [
             "In recent years, the U.S. equity market has seen a slew of new retail (personal, non-professional) investors enter in numbers not seen in over two decades.",
             "After having witnessed many sectors of the market generate explosive returns over the past few years, and having received thousands of dollars of \"free\" money from multiple stimulus packages, it's not difficult to see the market's attraction to new investors.",
-            "Also unsurprising are retail investors' choices: the companies and funds offering the greatest returns. This chart shows retail investors' top ten stock picks in the early months of 2023. All are universal household names such as Tesla, Amazon, Apple, and Google (or ETFs containing a collection of these names); these are names with which novice investors are already familiar outside of the market contex. Within the opening months of 2023, retail investors had already poured over $23 billion into these equities. Hovering a wedge in the chart provides a <span style=\"font-weight:bold; color:#fa0; text-shadow:1px 1px 2px #eee;\">tooltip</span> summary of that equity's proportion.",
+            "Also unsurprising are retail investors' choices: the companies and funds offering the greatest returns. This chart shows retail investors' top ten stock picks in the early months of 2023. All are universal household names such as Tesla, Amazon, Apple, and Google (or ETFs containing a collection of these names); these are names with which novice investors are already familiar outside of the market contex. Within the opening months of 2023, retail investors had already poured over $23 billion into these equities. Hovering a wedge in the chart provides a tooltip summary of that equity's proportion.",
             "With these new investors having experienced only a period of strong growth and healthy returns begs the question: <span style=\"font-weight:bold; font-style:italic;\">are these new investors prepared to weather the next inevitable market downturn?</span>"
         ]
     },
@@ -102,7 +102,7 @@ export const annotations = [
         textLines : [
             "The Great Recession sunk",
             "the S&P 500 to a low near",
-            "680 by February 2009."
+            "$680 by February 2009."
         ]
     },
     {

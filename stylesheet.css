@@ -103,6 +103,13 @@ nav > ul > li:not(:first-of-type) {
     align-items: center;
 }
 
+#references {
+    margin-top: 15px;
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+}
+
 #story {
     flex: auto;
 }
