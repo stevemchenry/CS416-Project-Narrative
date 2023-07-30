@@ -511,6 +511,20 @@ function renderScene2Canvas() {
     performAnnotationEntranceTransition(annotation0, annotationEntranceTransitionTime, delayTime);
     performAnnotationEntranceTransition(annotation1, annotationEntranceTransitionTime, delayTime);
 
+    // Create the tooltip ping icons
+    const chartTooltipPingGroup = chart.selection.append("g")
+        .attr("id", "chart-tooltip-ping-group")
+        .append("image")
+        .attr("opacity", 0.0)
+        .attr("href", "./images/ping.svg")
+        .attr("width", chart.markSize)
+        .attr("height", chart.markSize)
+        .attr("transform", `translate(${(chart.width / 2)},${(chart.height / 2)})`)
+        .attr("pointer-events", "none") // Don't capture mouse events; let them be captured by the object below
+        .transition()
+        .delay(delayTime)
+        .duration(1000)
+        .attr("opacity", 1.0);
 }
 
 // Load scene 3
@@ -1314,6 +1328,9 @@ function createPath(containerSelection, id, dataset, scales, color) {
 
 // Create the SPX stock chart tooltip
 function createStockChartSPXTooltip(e, chart, dataset) {
+    // Remove tooltip pings if present
+    chart.selection.select("#chart-tooltip-ping-group").remove();
+
     // Create the tooltip box
     const DateSegmentWidth = ((chart.width - chart.marginRight - chart.marginLeft) / dataset.length);
     const canvasPointerX = d3.pointer(e)[0];
@@ -1354,6 +1371,9 @@ function moveStockChartSPXTooltip(e, chart, dataset) {
 
 // Create the exploration stock chart tooltip
 function createStockChartExplorationTooltip(e, chart, datasets, datasetsActiveState) {
+    // Remove tooltip pings if present
+    chart.selection.select("#chart-tooltip-ping-group").remove();
+    
     // Create the tooltip box
     const dataPointCount = datasets["spx"].length;
     const DateSegmentWidth = ((chart.width - chart.marginRight - chart.marginLeft) / dataPointCount);
