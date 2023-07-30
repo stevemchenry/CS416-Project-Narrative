@@ -544,6 +544,11 @@ function loadScene3() {
 
 // Render scene 3's visualization onto the canvas
 function renderScene3Canvas() {
+    // If the scene is being viewed out of sequence, replay previous scenes in this chain
+    if(scene.previous !== (scene.current - 1)) {
+        renderScene2Canvas();
+    }
+
     // Create an alias for the chart used by this scene
     const chart = charts.line;
 
@@ -652,6 +657,11 @@ function loadScene4() {
 
 // Render scene 3's visualization onto the canvas
 function renderScene4Canvas() {
+    // If the scene is being viewed out of sequence, replay previous scenes in this chain
+    if(scene.previous !== (scene.current - 1)) {
+        renderScene3Canvas();
+    }
+
     // Create an alias for the chart used by this scene
     const chart = charts.line;
 
@@ -773,6 +783,11 @@ function loadScene5() {
 
 // Render scene 5's visualization onto the canvas
 function renderScene5Canvas() {
+    // If the scene is being viewed out of sequence, replay previous scenes in this chain
+    if(scene.previous !== (scene.current - 1)) {
+        renderScene4Canvas();
+    }
+
     // Declare the chart and its attributes
     const chart = charts.line;
 
@@ -1104,6 +1119,11 @@ function loadScene6() {
 
 // Render scene 6's visualization onto the canvas
 function renderScene6Canvas() {
+    // If the scene is being viewed out of sequence, replay previous scenes in this chain
+    if(scene.previous !== (scene.current - 1)) {
+        renderScene5Canvas();
+    }
+
     // Declare the chart and its attributes
     const chart = charts.line;
 
@@ -1373,7 +1393,7 @@ function moveStockChartSPXTooltip(e, chart, dataset) {
 function createStockChartExplorationTooltip(e, chart, datasets, datasetsActiveState) {
     // Remove tooltip pings if present
     chart.selection.select("#chart-tooltip-ping-group").remove();
-    
+
     // Create the tooltip box
     const dataPointCount = datasets["spx"].length;
     const DateSegmentWidth = ((chart.width - chart.marginRight - chart.marginLeft) / dataPointCount);
